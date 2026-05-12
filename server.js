@@ -9,6 +9,7 @@
  */
 
 const { chromium } = require('playwright');
+const { execFile } = require('child_process');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -293,6 +294,7 @@ class Scraper {
             db.data.meta.totalScrapes++;
             db.save();
             console.log(`✅ 列表完成: ${items.length} 个饰品, ${((Date.now()-t0)/1000).toFixed(1)}s`);
+            gitPush();
         } catch (e) {
             console.error('❌ 列表爬取失败:', e.message);
             // 浏览器可能崩溃，重置
@@ -334,6 +336,7 @@ class Scraper {
 
             db.save();
             console.log(`✅ 详情完成: ${targets.length} 个`);
+            gitPush();
         } catch (e) {
             console.error('❌ 详情爬取失败:', e.message);
             try { await this.browser?.close(); } catch {}
@@ -429,6 +432,26 @@ function serveFrontend(res) {
 // ==================== 启动 ====================
 function ts() { return new Date().toLocaleTimeString('zh-CN'); }
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// 自动推送数据到GitHub
+function gitPush() {
+    const cwd = __dirname;
+    const run = (cmd, args) => new Promise((resolve) => {
+        execFile(cmd, args, { cwd }, (err, stdout, stderr) => {
+            if (err) console.error(`   git ${args[0]} 失败:`, stderr.trim() || err.message);
+            resolve(!err);
+        });
+    });
+
+    (async () => {
+        const ok1 = await run('git', ['add', 'data/prices.json']);
+        if (!ok1) return;
+        const ok2 = await run('git', ['commit', '-m', `auto: update prices ${new Date().toLocaleString('zh-CN')}`]);
+        if (!ok2) { console.log('   📌 数据无变化，跳过推送'); return; }
+        const ok3 = await run('git', ['push', 'origin', 'master']);
+        if (ok3) console.log('   🚀 数据已推送到GitHub');
+    })();
+}
 
 async function main() {
     console.log('═'.repeat(55));
