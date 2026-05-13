@@ -238,7 +238,16 @@ td { padding: 10px 12px; font-size: 14px; white-space: nowrap; }
 
 /* Chart */
 .chart-wrap { position: relative; }
-.chart-wrap canvas { width: 100%; height: 180px; border-radius: var(--radius); }
+.chart-wrap canvas { width: 100%; height: 180px; border-radius: var(--radius); cursor: crosshair; }
+.chart-tooltip {
+    display: none; position: absolute; z-index: 10; pointer-events: none;
+    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow-sm); padding: 6px 10px; font-size: 12px; line-height: 1.5;
+    white-space: nowrap;
+}
+.chart-tooltip .tt-price { font-weight: 600; color: var(--accent); font-size: 14px; }
+.chart-tooltip .tt-time { color: var(--text-tertiary); }
+.chart-tooltip .tt-vol { color: var(--green); font-size: 11px; }
 
 /* Transaction list */
 .tx-table { width: 100%; border-collapse: collapse; }
@@ -567,11 +576,11 @@ function renderModal(item) {
     // === Price Chart ===
     const history = item.priceHistory || [];
     if (history.length > 1) {
-        html += `<div class="section"><div class="section-title">价格走势</div><div class="chart-wrap"><canvas id="priceChart"></canvas></div></div>`;
+        html += `<div class="section"><div class="section-title">价格走势</div><div class="chart-wrap"><canvas id="priceChart"></canvas><div class="chart-tooltip" id="priceChartTip"></div></div></div>`;
     }
     const buffHistory = item.buffPriceHistory || [];
     if (buffHistory.length > 1) {
-        html += `<div class="section"><div class="section-title">Buff 历史价格</div><div class="chart-wrap"><canvas id="buffChart"></canvas></div></div>`;
+        html += `<div class="section"><div class="section-title">Buff 历史价格</div><div class="chart-wrap"><canvas id="buffChart"></canvas><div class="chart-tooltip" id="buffChartTip"></div></div></div>`;
     }
 
     // === Transactions ===
@@ -598,10 +607,11 @@ function renderModal(item) {
 
 function closeModal() { document.getElementById('modal').classList.remove('active'); }
 
-// ===== Chart =====
+// ===== Chart with Interactive Tooltip =====
 function drawChart(id, data) {
     const canvas = document.getElementById(id);
     if (!canvas) return;
+    const tip = document.getElementById(id + 'Tip');
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr;
@@ -609,55 +619,135 @@ function drawChart(id, data) {
     const ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
     const W = rect.width, H = rect.height;
-    const pad = {top:16,right:54,bottom:24,left:8};
+    const pad = {top:16, right:54, bottom:24, left:8};
 
     const prices = data.map(d => d.p);
     const minP = Math.min(...prices) * 0.98;
     const maxP = Math.max(...prices) * 1.02;
     const range = maxP - minP || 1;
 
-    ctx.clearRect(0, 0, W, H);
+    // Base paint (no hover highlight)
+    function paintBase() {
+        ctx.clearRect(0, 0, W, H);
 
-    // Grid lines
-    for (let i = 0; i < 4; i++) {
-        const y = pad.top + (H-pad.top-pad.bottom) * i / 3;
-        ctx.strokeStyle = '#e8e8e5';
-        ctx.lineWidth = 0.5;
-        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W-pad.right, y); ctx.stroke();
-        const pv = maxP - range * i / 3;
-        ctx.fillStyle = '#9b9b9b';
-        ctx.font = '11px -apple-system, sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText('\u00A5'+fmtN(pv), W-4, y+4);
+        // Grid lines + Y labels
+        for (let i = 0; i < 4; i++) {
+            const y = pad.top + (H - pad.top - pad.bottom) * i / 3;
+            ctx.strokeStyle = '#e8e8e5'; ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+            ctx.fillStyle = '#9b9b9b'; ctx.font = '11px -apple-system, sans-serif'; ctx.textAlign = 'right';
+            ctx.fillText('\u00A5' + fmtN(maxP - range * i / 3), W - 4, y + 4);
+        }
+
+        // Area fill
+        ctx.beginPath();
+        data.forEach((d, i) => {
+            const x = pad.left + (W - pad.left - pad.right) * i / (data.length - 1);
+            const y = pad.top + (H - pad.top - pad.bottom) * (1 - (d.p - minP) / range);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.lineTo(pad.left + (W - pad.left - pad.right), H - pad.bottom);
+        ctx.lineTo(pad.left, H - pad.bottom);
+        ctx.closePath();
+        const grad = ctx.createLinearGradient(0, pad.top, 0, H - pad.bottom);
+        grad.addColorStop(0, 'rgba(35,131,226,0.08)');
+        grad.addColorStop(1, 'rgba(35,131,226,0)');
+        ctx.fillStyle = grad; ctx.fill();
+
+        // Line
+        ctx.beginPath();
+        data.forEach((d, i) => {
+            const x = pad.left + (W - pad.left - pad.right) * i / (data.length - 1);
+            const y = pad.top + (H - pad.top - pad.bottom) * (1 - (d.p - minP) / range);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = '#2383e2'; ctx.lineWidth = 1.5; ctx.stroke();
     }
 
-    // Area fill
-    ctx.beginPath();
-    data.forEach((d, i) => {
-        const x = pad.left + (W-pad.left-pad.right) * i / (data.length-1);
-        const y = pad.top + (H-pad.top-pad.bottom) * (1 - (d.p-minP)/range);
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    });
-    const lastX = pad.left + (W-pad.left-pad.right);
-    ctx.lineTo(lastX, H-pad.bottom);
-    ctx.lineTo(pad.left, H-pad.bottom);
-    ctx.closePath();
-    const grad = ctx.createLinearGradient(0, pad.top, 0, H-pad.bottom);
-    grad.addColorStop(0, 'rgba(35,131,226,0.08)');
-    grad.addColorStop(1, 'rgba(35,131,226,0)');
-    ctx.fillStyle = grad;
-    ctx.fill();
+    // Paint crosshair + dot for hovered index
+    function paintHover(idx) {
+        paintBase();
+        if (idx < 0 || idx >= data.length) return;
+        const d = data[idx];
+        const x = pad.left + (W - pad.left - pad.right) * idx / (data.length - 1);
+        const y = pad.top + (H - pad.top - pad.bottom) * (1 - (d.p - minP) / range);
 
-    // Line
-    ctx.beginPath();
-    data.forEach((d, i) => {
-        const x = pad.left + (W-pad.left-pad.right) * i / (data.length-1);
-        const y = pad.top + (H-pad.top-pad.bottom) * (1 - (d.p-minP)/range);
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    });
-    ctx.strokeStyle = '#2383e2';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+        // Vertical dashed line
+        ctx.save();
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = '#b0b0b0'; ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, H - pad.bottom); ctx.stroke();
+        ctx.restore();
+
+        // Horizontal dashed line
+        ctx.save();
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = '#b0b0b0'; ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+        ctx.restore();
+
+        // Dot
+        ctx.beginPath();
+        ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.strokeStyle = '#2383e2'; ctx.lineWidth = 2; ctx.stroke();
+    }
+
+    // Initial paint
+    paintBase();
+
+    // Mouse interaction
+    if (!tip) return;
+
+    canvas.onmousemove = function(e) {
+        const cr = canvas.getBoundingClientRect();
+        const mx = e.clientX - cr.left;
+        const my = e.clientY - cr.top;
+
+        // Map mouse X to nearest data index
+        const chartLeft = pad.left;
+        const chartRight = W - pad.right;
+        const ratio2 = (mx - chartLeft) / (chartRight - chartLeft);
+        const idx = Math.round(ratio2 * (data.length - 1));
+
+        if (idx < 0 || idx >= data.length || mx < chartLeft || mx > chartRight) {
+            tip.style.display = 'none';
+            paintBase();
+            return;
+        }
+
+        const d = data[idx];
+        paintHover(idx);
+
+        // Format time
+        const date = new Date(d.t);
+        const timeStr = date.toLocaleString('zh-CN', {
+            month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+        });
+
+        // Tooltip content
+        let tipHtml = `<div class="tt-price">&yen;${fmtN(d.p)}</div><div class="tt-time">${timeStr}</div>`;
+        if (d.v != null) tipHtml += `<div class="tt-vol">在售 ${d.v}</div>`;
+        tip.innerHTML = tipHtml;
+        tip.style.display = 'block';
+
+        // Position tooltip (avoid overflow)
+        const tipW = tip.offsetWidth;
+        const tipH = tip.offsetHeight;
+        let left = mx + 12;
+        let top = my - tipH / 2;
+        if (left + tipW > cr.width) left = mx - tipW - 12;
+        if (top < 0) top = 4;
+        if (top + tipH > cr.height) top = cr.height - tipH - 4;
+        tip.style.left = left + 'px';
+        tip.style.top = top + 'px';
+    };
+
+    canvas.onmouseleave = function() {
+        tip.style.display = 'none';
+        paintBase();
+    };
 }
 
 // ===== Actions =====

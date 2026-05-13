@@ -76,7 +76,9 @@ td{padding:10px 12px;font-size:14px;white-space:nowrap}
 .metric .label{font-size:11px;color:var(--text-tertiary);margin-bottom:4px;font-weight:500}
 .metric .val{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
 .metric .val.c-ask{color:var(--orange)}.metric .val.c-bid{color:var(--accent)}.metric .val.c-green{color:var(--green)}
-.chart-wrap canvas{width:100%;height:180px;border-radius:var(--radius)}
+.chart-wrap canvas{width:100%;height:180px;border-radius:var(--radius);cursor:crosshair}
+.chart-tooltip{display:none;position:absolute;z-index:10;pointer-events:none;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 1px 2px rgba(0,0,0,0.04);padding:6px 10px;font-size:12px;line-height:1.5;white-space:nowrap}
+.chart-tooltip .tt-price{font-weight:600;color:var(--accent);font-size:14px}.chart-tooltip .tt-time{color:var(--text-tertiary)}.chart-tooltip .tt-vol{color:var(--green);font-size:11px}
 .tx-scroll{max-height:300px;overflow-y:auto}
 .tx-table{width:100%;border-collapse:collapse}
 .tx-table th{text-align:left;padding:6px 8px;font-size:11px;font-weight:500;color:var(--text-tertiary);border-bottom:1px solid var(--border-light);position:static}
@@ -250,7 +252,7 @@ function showDetail(name) {
 
     const history = item.priceHistory||[];
     if (history.length > 1) {
-        html += `<div class="section"><div class="section-title">价格走势</div><div class="chart-wrap"><canvas id="priceChart"></canvas></div></div>`;
+        html += `<div class="section"><div class="section-title">价格走势</div><div class="chart-wrap"><canvas id="priceChart"></canvas><div class="chart-tooltip" id="priceChartTip"></div></div></div>`;
     }
 
     const txs = item.transactions||[];
@@ -269,18 +271,49 @@ function showDetail(name) {
 function closeModal(){document.getElementById('modal').classList.remove('active')}
 
 function drawChart(id, data) {
-    const c=document.getElementById(id); if(!c)return;
-    const dpr=window.devicePixelRatio||1, rect=c.getBoundingClientRect();
-    c.width=rect.width*dpr; c.height=rect.height*dpr;
-    const ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
-    const W=rect.width,H=rect.height, pad={top:16,right:54,bottom:24,left:8};
-    const prices=data.map(d=>d.p), minP=Math.min(...prices)*0.98, maxP=Math.max(...prices)*1.02, range=maxP-minP||1;
-    ctx.clearRect(0,0,W,H);
-    for(let i=0;i<4;i++){const y=pad.top+(H-pad.top-pad.bottom)*i/3;ctx.strokeStyle='#e8e8e5';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();ctx.fillStyle='#9b9b9b';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText('\u00A5'+fmtN(maxP-range*i/3),W-4,y+4)}
-    ctx.beginPath();data.forEach((d,i)=>{const x=pad.left+(W-pad.left-pad.right)*i/(data.length-1),y=pad.top+(H-pad.top-pad.bottom)*(1-(d.p-minP)/range);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
-    ctx.lineTo(pad.left+(W-pad.left-pad.right),H-pad.bottom);ctx.lineTo(pad.left,H-pad.bottom);ctx.closePath();
-    const grad=ctx.createLinearGradient(0,pad.top,0,H-pad.bottom);grad.addColorStop(0,'rgba(35,131,226,0.08)');grad.addColorStop(1,'rgba(35,131,226,0)');ctx.fillStyle=grad;ctx.fill();
-    ctx.beginPath();data.forEach((d,i)=>{const x=pad.left+(W-pad.left-pad.right)*i/(data.length-1),y=pad.top+(H-pad.top-pad.bottom)*(1-(d.p-minP)/range);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.strokeStyle='#2383e2';ctx.lineWidth=1.5;ctx.stroke();
+    const canvas=document.getElementById(id); if(!canvas)return;
+    const tip=document.getElementById(id+'Tip');
+    const dpr=window.devicePixelRatio||1, rect=canvas.getBoundingClientRect();
+    canvas.width=rect.width*dpr; canvas.height=rect.height*dpr;
+    const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
+    const W=rect.width, H=rect.height, pad={top:16,right:54,bottom:24,left:8};
+    const prices=data.map(d=>d.p), minP=Math.min(...prices)*0.98, maxP=Math.max(...prices)*1.02, rng=maxP-minP||1;
+
+    function paintBase(){
+        ctx.clearRect(0,0,W,H);
+        for(let i=0;i<4;i++){const y=pad.top+(H-pad.top-pad.bottom)*i/3;ctx.strokeStyle='#e8e8e5';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();ctx.fillStyle='#9b9b9b';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText('\u00A5'+fmtN(maxP-rng*i/3),W-4,y+4)}
+        ctx.beginPath();data.forEach((d,i)=>{const x=pad.left+(W-pad.left-pad.right)*i/(data.length-1),y=pad.top+(H-pad.top-pad.bottom)*(1-(d.p-minP)/rng);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+        ctx.lineTo(pad.left+(W-pad.left-pad.right),H-pad.bottom);ctx.lineTo(pad.left,H-pad.bottom);ctx.closePath();
+        const grad=ctx.createLinearGradient(0,pad.top,0,H-pad.bottom);grad.addColorStop(0,'rgba(35,131,226,0.08)');grad.addColorStop(1,'rgba(35,131,226,0)');ctx.fillStyle=grad;ctx.fill();
+        ctx.beginPath();data.forEach((d,i)=>{const x=pad.left+(W-pad.left-pad.right)*i/(data.length-1),y=pad.top+(H-pad.top-pad.bottom)*(1-(d.p-minP)/rng);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.strokeStyle='#2383e2';ctx.lineWidth=1.5;ctx.stroke();
+    }
+    function paintHover(idx){
+        paintBase(); if(idx<0||idx>=data.length)return;
+        const d=data[idx];
+        const x=pad.left+(W-pad.left-pad.right)*idx/(data.length-1);
+        const y=pad.top+(H-pad.top-pad.bottom)*(1-(d.p-minP)/rng);
+        ctx.save();ctx.setLineDash([4,3]);ctx.strokeStyle='#b0b0b0';ctx.lineWidth=0.8;
+        ctx.beginPath();ctx.moveTo(x,pad.top);ctx.lineTo(x,H-pad.bottom);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();ctx.restore();
+        ctx.beginPath();ctx.arc(x,y,4.5,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#2383e2';ctx.lineWidth=2;ctx.stroke();
+    }
+    paintBase();
+    if(!tip)return;
+    canvas.onmousemove=function(e){
+        const cr=canvas.getBoundingClientRect(), mx=e.clientX-cr.left;
+        const r2=(mx-pad.left)/(W-pad.left-pad.right), idx=Math.round(r2*(data.length-1));
+        if(idx<0||idx>=data.length||mx<pad.left||mx>W-pad.right){tip.style.display='none';paintBase();return}
+        const d=data[idx]; paintHover(idx);
+        const ts=new Date(d.t).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+        let h=`<div class="tt-price">&yen;${fmtN(d.p)}</div><div class="tt-time">${ts}</div>`;
+        if(d.v!=null)h+=`<div class="tt-vol">在售 ${d.v}</div>`;
+        tip.innerHTML=h;tip.style.display='block';
+        let left=mx+12,top=e.clientY-cr.top-tip.offsetHeight/2;
+        if(left+tip.offsetWidth>cr.width)left=mx-tip.offsetWidth-12;
+        if(top<0)top=4;if(top+tip.offsetHeight>cr.height)top=cr.height-tip.offsetHeight-4;
+        tip.style.left=left+'px';tip.style.top=top+'px';
+    };
+    canvas.onmouseleave=function(){tip.style.display='none';paintBase()};
 }
 
 function fmtN(n){if(n==null||isNaN(n))return'-';return Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})}
