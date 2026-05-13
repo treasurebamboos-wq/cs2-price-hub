@@ -5,289 +5,290 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CS2 Price Hub</title>
 <style>
-:root{--bg:#0f1923;--card:#1a2736;--border:#2a3a4a;--text:#e0e6ed;--text2:#8899aa;--accent:#4fc3f7;--green:#4caf50;--red:#ef5350;--orange:#ff9800}
+:root {
+    --bg:#ffffff; --bg-secondary:#f7f7f5; --bg-hover:#f1f1ef; --bg-active:#e8e8e5;
+    --border:#e3e3e0; --border-light:#efefed;
+    --text:#1f1f1f; --text-secondary:#6b6b6b; --text-tertiary:#9b9b9b;
+    --accent:#2383e2; --accent-light:#e8f0fe;
+    --green:#448361; --green-bg:#edf7f0; --red:#c4554d; --red-bg:#fbe9e7;
+    --orange:#c77d2e; --orange-bg:#fdf1e3; --purple:#7c5cba; --purple-bg:#f0ecf9;
+    --radius:6px; --shadow-lg:0 12px 40px rgba(0,0,0,0.12);
+    --font:-apple-system,'Segoe UI','Helvetica Neue',sans-serif;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.header h1{font-size:20px;font-weight:600}.header h1 span{color:var(--accent)}
-.header-right{display:flex;gap:12px;align-items:center}
-.stats-badge{background:var(--bg);padding:4px 12px;border-radius:20px;font-size:12px;color:var(--text2)}
-.stats-badge b{color:var(--accent)}
-.search-bar{padding:16px 24px}
-.search-bar input{width:100%;max-width:500px;background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:8px;font-size:14px;outline:none}
-.search-bar input:focus{border-color:var(--accent)}
-.search-bar input::placeholder{color:var(--text2)}
-.table-wrap{padding:0 24px 24px;overflow-x:auto}
+html{font-size:15px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+
+.header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-light);padding:0 max(24px,calc((100vw - 1200px)/2))}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:54px}
+.header h1{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}
+.header h1 .icon{font-size:20px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;color:var(--text-secondary);background:var(--bg-secondary)}
+.badge b{color:var(--text);font-weight:600}
+
+.toolbar{padding:16px max(24px,calc((100vw - 1200px)/2));display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.search-box{flex:1;min-width:240px;max-width:400px;position:relative}
+.search-box .ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);font-size:14px;pointer-events:none}
+.search-box input{width:100%;padding:7px 12px 7px 32px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--bg);outline:none;transition:border 0.15s}
+.search-box input::placeholder{color:var(--text-tertiary)}
+.search-box input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(35,131,226,0.12)}
+.sort-select{padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text);background:var(--bg);cursor:pointer;outline:none}
+.item-count{font-size:13px;color:var(--text-tertiary);margin-left:auto}
+
+.table-container{padding:0 max(24px,calc((100vw - 1200px)/2)) 24px;overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th{background:var(--card);color:var(--text2);font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:58px;z-index:10}
-td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
-tr{cursor:pointer;transition:background .1s}tr:hover td{background:rgba(79,195,247,.05)}
-.price{font-weight:600;color:var(--orange)}.volume{color:var(--green)}.text-muted{color:var(--text2)}.text-sm{font-size:12px}
-.name-cn{font-weight:500}.name-en{color:var(--text2);font-size:11px;margin-top:2px}
-.tag{display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;margin-left:4px}
-.tag-vol{background:rgba(76,175,80,.15);color:var(--green)}
-.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:200;justify-content:center;align-items:flex-start;padding-top:60px}
+thead th{padding:8px 12px;font-size:12px;font-weight:500;color:var(--text-tertiary);text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:54px;background:var(--bg);z-index:10}
+tbody tr{border-bottom:1px solid var(--border-light);transition:background 0.1s;cursor:pointer}
+tbody tr:hover{background:var(--bg-secondary)}
+td{padding:10px 12px;font-size:14px;white-space:nowrap}
+
+.cell-name{display:flex;align-items:center;gap:10px;min-width:220px;white-space:normal}
+.cell-name img{width:44px;height:34px;object-fit:contain;border-radius:4px;background:var(--bg-secondary);flex-shrink:0}
+.cell-name .no-img{width:44px;height:34px;border-radius:4px;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text-tertiary);flex-shrink:0}
+.cell-name .text .cn{font-weight:500;font-size:14px;line-height:1.3}
+.cell-name .text .en{font-size:11px;color:var(--text-tertiary);line-height:1.3;margin-top:1px}
+.cell-price{font-weight:600;font-variant-numeric:tabular-nums}
+.cell-price.ask{color:var(--orange)}.cell-price.bid{color:var(--accent)}.cell-price.steam{color:var(--text-secondary)}
+.cell-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500}
+.tag-green{background:var(--green-bg);color:var(--green)}.tag-orange{background:var(--orange-bg);color:var(--orange)}.tag-muted{background:var(--bg-secondary);color:var(--text-tertiary)}
+.cell-time{font-size:12px;color:var(--text-tertiary)}.cell-muted{color:var(--text-tertiary)}
+
+.pagination{display:flex;justify-content:center;gap:4px;padding:8px 24px 32px}
+.pagination button{min-width:32px;height:32px;border:none;border-radius:var(--radius);background:transparent;color:var(--text-secondary);font-size:13px;cursor:pointer;transition:all 0.1s}
+.pagination button:hover{background:var(--bg-hover)}.pagination button.active{background:var(--accent);color:#fff;font-weight:600}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.25);z-index:200;justify-content:center;align-items:flex-start;padding:48px 16px;overflow-y:auto}
 .modal-overlay.active{display:flex}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:12px;width:90%;max-width:800px;max-height:80vh;overflow-y:auto;padding:24px}
-.modal h2{font-size:18px;margin-bottom:4px}.modal h3{font-size:14px;color:var(--text2);margin-bottom:16px}
-.modal-close{float:right;cursor:pointer;font-size:20px;color:var(--text2);background:none;border:none}.modal-close:hover{color:var(--text)}
-.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px}
-.info-card{background:var(--bg);border-radius:8px;padding:12px}
-.info-card .label{font-size:11px;color:var(--text2);text-transform:uppercase;margin-bottom:4px}
-.info-card .value{font-size:18px;font-weight:600}
-.info-card .value.ask{color:var(--orange)}.info-card .value.bid{color:var(--accent)}.info-card .value.vol{color:var(--green)}
-.chart-section{margin-top:16px}.chart-section h4{font-size:13px;color:var(--text2);margin-bottom:8px}
-canvas{width:100%;height:200px;background:var(--bg);border-radius:8px}
-.tx-list{max-height:250px;overflow-y:auto;margin-top:16px}.tx-list h4{font-size:13px;color:var(--text2);margin-bottom:8px}
-.tx-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
-.tx-price{color:var(--orange);font-weight:500}.tx-time{color:var(--text2)}
-.loading{text-align:center;padding:40px;color:var(--text2)}
-.pagination{display:flex;justify-content:center;gap:8px;padding:16px}
-.pagination button{background:var(--card);color:var(--text);border:1px solid var(--border);padding:6px 14px;border-radius:6px;cursor:pointer}
-.pagination button.active{background:var(--accent);color:#000;border-color:var(--accent)}
-.ratio-up{color:var(--red)}.ratio-down{color:var(--green)}
+.modal{background:var(--bg);border-radius:12px;width:100%;max-width:760px;box-shadow:var(--shadow-lg);animation:modalIn .2s ease}
+@keyframes modalIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.modal-header{display:flex;align-items:flex-start;gap:14px;padding:24px 28px 0}
+.modal-header img{width:64px;height:48px;object-fit:contain;border-radius:6px;background:var(--bg-secondary);flex-shrink:0}
+.modal-header .no-img{width:64px;height:48px;border-radius:6px;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--text-tertiary);flex-shrink:0}
+.modal-header .info{flex:1}.modal-header .info h2{font-size:18px;font-weight:600;line-height:1.3}
+.modal-header .info .sub{font-size:13px;color:var(--text-tertiary);margin-top:2px}
+.modal-close{width:28px;height:28px;border-radius:var(--radius);border:none;background:transparent;color:var(--text-tertiary);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-close:hover{background:var(--bg-hover);color:var(--text)}
+.modal-body{padding:20px 28px 28px}
+.section{margin-bottom:24px}.section:last-child{margin-bottom:0}
+.section-title{font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border-light)}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.metric{background:var(--bg-secondary);border-radius:var(--radius);padding:12px 14px}
+.metric .label{font-size:11px;color:var(--text-tertiary);margin-bottom:4px;font-weight:500}
+.metric .val{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.metric .val.c-ask{color:var(--orange)}.metric .val.c-bid{color:var(--accent)}.metric .val.c-green{color:var(--green)}
+.chart-wrap canvas{width:100%;height:180px;border-radius:var(--radius)}
+.tx-scroll{max-height:300px;overflow-y:auto}
+.tx-table{width:100%;border-collapse:collapse}
+.tx-table th{text-align:left;padding:6px 8px;font-size:11px;font-weight:500;color:var(--text-tertiary);border-bottom:1px solid var(--border-light);position:static}
+.tx-table td{padding:6px 8px;font-size:13px;border-bottom:1px solid var(--border-light)}
+.empty{text-align:center;padding:60px 24px;color:var(--text-tertiary)}.empty .icon{font-size:36px;margin-bottom:12px}
+@media(max-width:768px){.toolbar{padding:12px 16px}.table-container{padding:0 16px 16px}.modal-header,.modal-body{padding-left:20px;padding-right:20px}.metric-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>🎮 CS2 <span>Price Hub</span></h1>
-    <div class="header-right">
-        <span class="stats-badge" id="statsInfo">加载中...</span>
+<div class="header"><div class="header-inner">
+    <h1><span class="icon">&#9670;</span> CS2 Price Hub</h1>
+    <div><span class="badge" id="statsInfo">加载数据中...</span></div>
+</div></div>
+
+<div class="toolbar">
+    <div class="search-box">
+        <span class="ico">&#128269;</span>
+        <input type="text" id="searchInput" placeholder="搜索饰品..." oninput="debounceSearch()">
     </div>
+    <select class="sort-select" id="sortSelect" onchange="doSort()">
+        <option value="ask_volume_desc">在售量 高-低</option>
+        <option value="ask_asc">价格 低-高</option>
+        <option value="ask_desc">价格 高-低</option>
+        <option value="ratio_asc">Buff/Steam 低-高</option>
+    </select>
+    <span class="item-count" id="itemCount"></span>
 </div>
 
-<div class="search-bar">
-    <input type="text" id="searchInput" placeholder="🔍 搜索饰品名称（中文/英文）..." oninput="debounceSearch()">
-</div>
-
-<div class="table-wrap">
-    <table>
-        <thead><tr>
-            <th>饰品名称</th>
-            <th>Buff最低价</th>
-            <th>求购价</th>
-            <th>Steam价</th>
-            <th>Buff/Steam</th>
-            <th>在售</th>
-            <th>24h成交</th>
-            <th>成交均价</th>
-            <th>更新时间</th>
-        </tr></thead>
-        <tbody id="tableBody"><tr><td colspan="9" class="loading">加载中...</td></tr></tbody>
-    </table>
+<div class="table-container">
+    <table><thead><tr>
+        <th style="min-width:220px">饰品</th><th>Buff价</th><th>求购价</th><th>Steam价</th>
+        <th>Buff/Steam</th><th>在售</th><th>求购</th><th>更新</th>
+    </tr></thead><tbody id="tableBody">
+        <tr><td colspan="8"><div class="empty"><div class="icon">&#9697;</div><div>加载中...</div></div></td></tr>
+    </tbody></table>
 </div>
 <div class="pagination" id="pagination"></div>
 
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
-    <div class="modal"><button class="modal-close" onclick="closeModal()">✕</button><div id="modalContent"></div></div>
+    <div class="modal">
+        <div class="modal-header"><div id="modalImg"></div><div class="info" id="modalInfo"></div>
+        <button class="modal-close" onclick="closeModal()">&#10005;</button></div>
+        <div class="modal-body" id="modalBody"></div>
+    </div>
 </div>
 
 <script>
-// ===== 数据源：从 GitHub 读取 =====
 const DATA_URL = 'https://raw.githubusercontent.com/treasurebamboos-wq/cs2-price-hub/master/data/prices_lite.json';
 const PAGE_SIZE = 50;
-let currentPage = 1;
-let rawItems = {};   // 原始数据
-let allData = [];    // 处理后的数组
-let searchTimer = null;
+let currentPage = 1, allItems = [], filtered = [], rawData = null, searchTimer = null;
 
-// 标准化字段（兼容新旧格式）
-function normalize(item, key) {
-    const b = item.prices?.buff || {};
+// Normalize old/new field names
+function norm(b) {
     return {
-        market_hash_name: key,
-        name: item.name,
-        goods_id: item.goods_id,
         ask: b.ask ?? b.price ?? null,
         ask_volume: b.ask_volume ?? b.volume ?? b.sell_num ?? 0,
         bid: b.bid ?? b.buy_price ?? null,
         bid_volume: b.bid_volume ?? b.buy_num ?? 0,
-        steam_price: b.steam_price ?? null,
+        steam_price_cny: b.steam_price_cny ?? b.steam_price ?? null,
         quick_price: b.quick_price ?? null,
         updated_at: b.updated_at ?? null,
-        priceHistory: item.priceHistory || [],
-        buffPriceHistory: item.buffPriceHistory || [],
-        transactions: item.transactions || [],
-        volume_24h: countVol24h(item.transactions),
-        transaction_count: (item.transactions || []).length,
     };
 }
 
-function countVol24h(txs) {
-    if (!txs?.length) return 0;
-    const cutoff = Date.now() / 1000 - 86400;
-    return txs.filter(t => {
-        const ts = typeof t.time === 'number' ? (t.time > 1e12 ? t.time/1000 : t.time) : 0;
-        return ts > cutoff;
-    }).length;
-}
-
-// ===== 加载数据 =====
 async function loadData() {
     try {
         const res = await fetch(DATA_URL + '?t=' + Date.now());
-        const json = await res.json();
-        rawItems = json.items || {};
-        processData();
-        renderStats(json.meta || json.stats || {});
-    } catch (e) {
-        document.getElementById('tableBody').innerHTML =
-            `<tr><td colspan="9" class="loading">加载失败：${e.message}</td></tr>`;
-    }
+        rawData = await res.json();
+        allItems = Object.values(rawData.items || {});
+        const meta = rawData.meta || {};
+        const time = meta.lastUpdate ? new Date(meta.lastUpdate).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+        document.getElementById('statsInfo').innerHTML = `<b>${allItems.length}</b> 饰品 &middot; ${time}`;
+        filtered = [...allItems];
+        doSort();
+    } catch(e) { console.error(e); }
 }
 
-function processData(filter) {
-    let entries = Object.entries(rawItems);
-    if (filter) {
-        const q = filter.toLowerCase();
-        entries = entries.filter(([k, v]) =>
-            k.toLowerCase().includes(q) || (v.name || '').toLowerCase().includes(q)
-        );
-    }
-    allData = entries.map(([k, v]) => normalize(v, k));
-    allData.sort((a, b) => (b.ask_volume || 0) - (a.ask_volume || 0));
+function debounceSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(doSearch, 300); }
+function doSearch() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    filtered = q ? allItems.filter(i => (i.name||'').toLowerCase().includes(q) || (i.market_hash_name||'').toLowerCase().includes(q) || (i.short_name||'').toLowerCase().includes(q)) : [...allItems];
+    currentPage = 1; doSort();
+}
+
+function doSort() {
+    const mode = document.getElementById('sortSelect').value;
+    filtered.sort((a, b) => {
+        const ba = norm(a.prices?.buff||{}), bb = norm(b.prices?.buff||{});
+        switch(mode) {
+            case 'ask_asc': return (ba.ask||Infinity)-(bb.ask||Infinity);
+            case 'ask_desc': return (bb.ask||0)-(ba.ask||0);
+            case 'ask_volume_desc': return (bb.ask_volume||0)-(ba.ask_volume||0);
+            case 'ratio_asc': {
+                const ra = ba.ask && ba.steam_price_cny ? ba.ask/ba.steam_price_cny : Infinity;
+                const rb = bb.ask && bb.steam_price_cny ? bb.ask/bb.steam_price_cny : Infinity;
+                return ra - rb;
+            }
+            default: return 0;
+        }
+    });
     renderTable();
 }
 
-// ===== 搜索 =====
-function debounceSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(doSearch, 300); }
-function doSearch() {
-    const q = document.getElementById('searchInput').value.trim();
-    currentPage = 1;
-    processData(q || null);
-}
-
-// ===== 渲染表格 =====
 function renderTable() {
     const tbody = document.getElementById('tableBody');
-    const start = (currentPage - 1) * PAGE_SIZE;
-    const page = allData.slice(start, start + PAGE_SIZE);
+    const start = (currentPage-1)*PAGE_SIZE;
+    const page = filtered.slice(start, start+PAGE_SIZE);
+    document.getElementById('itemCount').textContent = `${filtered.length} 件`;
+    if (!page.length) { tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="icon">&#128270;</div><div>没有匹配的饰品</div></div></td></tr>'; return; }
 
-    if (!page.length) { tbody.innerHTML = '<tr><td colspan="9" class="loading">暂无数据</td></tr>'; return; }
-
-    tbody.innerHTML = page.map(d => {
-        const ratio = d.ask && d.steam_price ? (d.ask / d.steam_price * 100).toFixed(1) : null;
-        const ratioClass = ratio ? (ratio < 70 ? 'ratio-down' : ratio > 90 ? 'ratio-up' : '') : '';
-        const updated = d.updated_at ? new Date(d.updated_at).toLocaleTimeString('zh-CN') : '-';
-        return `<tr onclick="showDetail('${esc(d.market_hash_name)}')">
-            <td><div class="name-cn">${esc(d.name||'')}</div><div class="name-en">${esc(d.market_hash_name)}</div></td>
-            <td class="price">${fmtPrice(d.ask)}</td>
-            <td class="price" style="color:var(--accent)">${fmtPrice(d.bid)}</td>
-            <td class="text-muted">${fmtPrice(d.steam_price)}</td>
-            <td class="${ratioClass}">${ratio ? ratio+'%' : '-'}</td>
-            <td class="volume">${d.ask_volume}</td>
-            <td>${d.volume_24h>0?`<span class="tag tag-vol">${d.volume_24h}笔</span>`:'<span class="text-muted">-</span>'}</td>
-            <td>${fmtPrice(d.quick_price)}</td>
-            <td class="text-muted text-sm">${updated}</td>
+    tbody.innerHTML = page.map(item => {
+        const b = norm(item.prices?.buff||{});
+        const ask = b.ask!=null ? `&yen;${fmtN(b.ask)}` : '-';
+        const bid = b.bid!=null ? `&yen;${fmtN(b.bid)}` : '-';
+        const steam = b.steam_price_cny!=null ? `&yen;${fmtN(b.steam_price_cny)}` : '-';
+        const ratio = (b.ask && b.steam_price_cny && b.steam_price_cny>0) ? (b.ask/b.steam_price_cny*100).toFixed(1)+'%' : '-';
+        const rc = ratio!=='-' ? (parseFloat(ratio)<70?'tag-green':parseFloat(ratio)<85?'tag-orange':'tag-muted') : '';
+        const updated = b.updated_at ? timeAgo(b.updated_at) : '-';
+        const img = item.icon_url;
+        return `<tr onclick="showDetail('${esc(item.market_hash_name)}')">
+            <td><div class="cell-name">
+                ${img?`<img src="${esc(img)}" loading="lazy" alt="">`:`<div class="no-img">&#9670;</div>`}
+                <div class="text"><div class="cn">${esc(item.name||'')}</div><div class="en">${esc(item.short_name||item.market_hash_name||'')}</div></div>
+            </div></td>
+            <td class="cell-price ask">${ask}</td><td class="cell-price bid">${bid}</td><td class="cell-price steam">${steam}</td>
+            <td>${ratio!=='-'?`<span class="cell-tag ${rc}">${ratio}</span>`:'<span class="cell-muted">-</span>'}</td>
+            <td>${b.ask_volume||0}</td><td>${b.bid_volume||0}</td><td class="cell-time">${updated}</td>
         </tr>`;
     }).join('');
-
     renderPagination();
 }
 
 function renderPagination() {
-    const total = Math.ceil(allData.length / PAGE_SIZE);
-    if (total <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
-    let html = '';
-    for (let i = 1; i <= Math.min(total, 10); i++)
-        html += `<button class="${i===currentPage?'active':''}" onclick="gotoPage(${i})">${i}</button>`;
-    if (total > 10) html += `<button disabled>... ${total}页</button>`;
-    document.getElementById('pagination').innerHTML = html;
+    const total = Math.ceil(filtered.length/PAGE_SIZE); const el = document.getElementById('pagination');
+    if (total<=1) { el.innerHTML=''; return; }
+    let h=''; for (let i=1;i<=total;i++) { if (i===1||i===total||(i>=currentPage-2&&i<=currentPage+2)) h+=`<button class="${i===currentPage?'active':''}" onclick="gotoPage(${i})">${i}</button>`; else if (i===currentPage-3||i===currentPage+3) h+=`<button disabled>&hellip;</button>`; }
+    el.innerHTML=h;
 }
-function gotoPage(p) { currentPage = p; renderTable(); window.scrollTo(0,0); }
+function gotoPage(p){currentPage=p;renderTable();window.scrollTo({top:0,behavior:'smooth'})}
 
-// ===== 统计 =====
-function renderStats(meta) {
-    const items = Object.values(rawItems);
-    const totalTx = items.reduce((s,i) => s + (i.transactions?.length||0), 0);
-    const lastUpdate = meta.lastUpdate ? new Date(meta.lastUpdate).toLocaleString('zh-CN') : '-';
-    document.getElementById('statsInfo').innerHTML =
-        `饰品 <b>${items.length}</b> | 成交 <b>${totalTx}</b> | 更新 <b>${lastUpdate}</b>`;
-}
-
-// ===== 详情弹窗 =====
 function showDetail(name) {
-    const item = rawItems[name];
+    const item = allItems.find(i => i.market_hash_name === name);
     if (!item) return;
-    const d = normalize(item, name);
-    const modal = document.getElementById('modal');
-    modal.classList.add('active');
+    document.getElementById('modal').classList.add('active');
+    const b = norm(item.prices?.buff||{});
+    const d = item.detail||{};
+    const so = item.sell_order_summary||{};
+    document.getElementById('modalImg').innerHTML = item.icon_url?`<img src="${esc(item.icon_url)}" alt="">`:`<div class="no-img">&#9670;</div>`;
+    document.getElementById('modalInfo').innerHTML = `<h2>${esc(item.name||'')}</h2><div class="sub">${esc(item.market_hash_name||'')}</div>`;
 
-    const ratio = d.ask && d.steam_price ? (d.ask / d.steam_price * 100).toFixed(1) + '%' : '-';
-    let html = `
-        <h2>${esc(d.name||'')}</h2><h3>${esc(d.market_hash_name)}</h3>
-        <div class="info-grid">
-            <div class="info-card"><div class="label">Buff最低价</div><div class="value ask">${fmtPrice(d.ask)}</div></div>
-            <div class="info-card"><div class="label">最高求购</div><div class="value bid">${fmtPrice(d.bid)}</div></div>
-            <div class="info-card"><div class="label">Steam价</div><div class="value">${fmtPrice(d.steam_price)}</div></div>
-            <div class="info-card"><div class="label">在售数量</div><div class="value vol">${d.ask_volume}</div></div>
-            <div class="info-card"><div class="label">求购数量</div><div class="value">${d.bid_volume}</div></div>
-            <div class="info-card"><div class="label">24h成交量</div><div class="value vol">${d.volume_24h}笔</div></div>
-            <div class="info-card"><div class="label">成交均价</div><div class="value ask">${fmtPrice(d.quick_price)}</div></div>
-            <div class="info-card"><div class="label">Buff/Steam</div><div class="value">${ratio}</div></div>
-        </div>`;
+    const ratio = (b.ask && b.steam_price_cny && b.steam_price_cny>0) ? (b.ask/b.steam_price_cny*100).toFixed(1)+'%' : '-';
+    const rc = ratio!=='-'?(parseFloat(ratio)<70?'c-green':parseFloat(ratio)<85?'c-ask':''):'';
 
-    // 价格走势
-    if (d.priceHistory.length > 1)
-        html += `<div class="chart-section"><h4>📈 价格走势（采集记录）</h4><canvas id="priceChart"></canvas></div>`;
-    if (d.buffPriceHistory.length > 1)
-        html += `<div class="chart-section"><h4>📊 Buff历史价格</h4><canvas id="buffChart"></canvas></div>`;
+    let html = `<div class="section"><div class="section-title">价格信息</div><div class="metric-grid">
+        <div class="metric"><div class="label">Buff 最低价</div><div class="val c-ask">&yen;${fmtN(b.ask)}</div></div>
+        <div class="metric"><div class="label">最高求购</div><div class="val c-bid">&yen;${fmtN(b.bid)}</div></div>
+        <div class="metric"><div class="label">Steam 价格</div><div class="val">&yen;${fmtN(b.steam_price_cny)}</div></div>
+        <div class="metric"><div class="label">快速出售价</div><div class="val">&yen;${fmtN(b.quick_price)}</div></div>
+        <div class="metric"><div class="label">Buff/Steam</div><div class="val ${rc}">${ratio}</div></div>
+        <div class="metric"><div class="label">在售/求购</div><div class="val">${b.ask_volume||0} / ${b.bid_volume||0}</div></div>
+    </div></div>`;
 
-    // 成交记录
-    const txs = d.transactions;
+    if (so.price_range) {
+        html += `<div class="section"><div class="section-title">在售挂单 (${so.total||0} 个)</div><div class="metric-grid">
+            <div class="metric"><div class="label">最低</div><div class="val c-ask">&yen;${fmtN(so.price_range.min)}</div></div>
+            <div class="metric"><div class="label">最高</div><div class="val">&yen;${fmtN(so.price_range.max)}</div></div>
+            <div class="metric"><div class="label">平均</div><div class="val">&yen;${fmtN(so.price_range.avg)}</div></div>
+        </div></div>`;
+    }
+
+    const history = item.priceHistory||[];
+    if (history.length > 1) {
+        html += `<div class="section"><div class="section-title">价格走势</div><div class="chart-wrap"><canvas id="priceChart"></canvas></div></div>`;
+    }
+
+    const txs = item.transactions||[];
     if (txs.length > 0) {
-        html += `<div class="tx-list"><h4>📜 最近成交记录 (${txs.length}条)</h4>`;
+        html += `<div class="section"><div class="section-title">成交记录 (${txs.length} 条)</div><div class="tx-scroll"><table class="tx-table"><thead><tr><th>价格</th><th>磨损</th><th>时间</th></tr></thead><tbody>`;
         txs.slice(-20).reverse().forEach(tx => {
-            const t = typeof tx.time==='number'?(tx.time>1e12?new Date(tx.time):new Date(tx.time*1000)).toLocaleString('zh-CN'):(tx.time||'-');
-            html += `<div class="tx-item"><span class="tx-price">${fmtPrice(tx.price)}</span><span class="tx-time">${t}</span></div>`;
+            const t = typeof tx.time==='number'?(tx.time>1e12?new Date(tx.time):new Date(tx.time*1000)).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):tx.time||'-';
+            const w = tx.paintwear?parseFloat(tx.paintwear).toFixed(6):'-';
+            html += `<tr><td class="cell-price ask">&yen;${fmtN(tx.price)}</td><td>${w}</td><td class="cell-time">${t}</td></tr>`;
         });
-        html += '</div>';
+        html += `</tbody></table></div></div>`;
     }
-
-    document.getElementById('modalContent').innerHTML = html;
-
-    if (d.priceHistory.length > 1) drawChart('priceChart', d.priceHistory.map(h=>({t:h.t,p:h.p})));
-    if (d.buffPriceHistory.length > 1) drawChart('buffChart', d.buffPriceHistory.map(h=>({t:h[0]*1000,p:h[1]})));
+    document.getElementById('modalBody').innerHTML = html;
+    if (history.length > 1) drawChart('priceChart', history.map(h=>({t:h.t,p:h.p})));
 }
-function closeModal() { document.getElementById('modal').classList.remove('active'); }
+function closeModal(){document.getElementById('modal').classList.remove('active')}
 
-// ===== Canvas 图表 =====
 function drawChart(id, data) {
-    const c = document.getElementById(id); if (!c) return;
-    const ctx = c.getContext('2d');
-    const W = c.width = c.offsetWidth * 2, H = c.height = 400;
-    const pad = {top:20,right:60,bottom:30,left:10};
-    const prices = data.map(d=>d.p), minP = Math.min(...prices)*.98, maxP = Math.max(...prices)*1.02;
+    const c=document.getElementById(id); if(!c)return;
+    const dpr=window.devicePixelRatio||1, rect=c.getBoundingClientRect();
+    c.width=rect.width*dpr; c.height=rect.height*dpr;
+    const ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
+    const W=rect.width,H=rect.height, pad={top:16,right:54,bottom:24,left:8};
+    const prices=data.map(d=>d.p), minP=Math.min(...prices)*0.98, maxP=Math.max(...prices)*1.02, range=maxP-minP||1;
     ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=1;
-    for(let i=0;i<5;i++){
-        const y=pad.top+(H-pad.top-pad.bottom)*i/4;
-        ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();
-        ctx.fillStyle='#667788';ctx.font='20px sans-serif';ctx.textAlign='right';
-        ctx.fillText('¥'+num(maxP-(maxP-minP)*i/4),W-5,y+6);
-    }
-    ctx.strokeStyle='#4fc3f7';ctx.lineWidth=2;ctx.beginPath();
-    data.forEach((d,i)=>{
-        const x=pad.left+(W-pad.left-pad.right)*i/(data.length-1);
-        const y=pad.top+(H-pad.top-pad.bottom)*(1-(d.p-minP)/(maxP-minP));
-        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-    });
-    ctx.stroke();
-    const grad=ctx.createLinearGradient(0,pad.top,0,H-pad.bottom);
-    grad.addColorStop(0,'rgba(79,195,247,.15)');grad.addColorStop(1,'rgba(79,195,247,0)');
-    ctx.lineTo(W-pad.right,H-pad.bottom);ctx.lineTo(pad.left,H-pad.bottom);ctx.closePath();
-    ctx.fillStyle=grad;ctx.fill();
+    for(let i=0;i<4;i++){const y=pad.top+(H-pad.top-pad.bottom)*i/3;ctx.strokeStyle='#e8e8e5';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();ctx.fillStyle='#9b9b9b';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText('\u00A5'+fmtN(maxP-range*i/3),W-4,y+4)}
+    ctx.beginPath();data.forEach((d,i)=>{const x=pad.left+(W-pad.left-pad.right)*i/(data.length-1),y=pad.top+(H-pad.top-pad.bottom)*(1-(d.p-minP)/range);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+    ctx.lineTo(pad.left+(W-pad.left-pad.right),H-pad.bottom);ctx.lineTo(pad.left,H-pad.bottom);ctx.closePath();
+    const grad=ctx.createLinearGradient(0,pad.top,0,H-pad.bottom);grad.addColorStop(0,'rgba(35,131,226,0.08)');grad.addColorStop(1,'rgba(35,131,226,0)');ctx.fillStyle=grad;ctx.fill();
+    ctx.beginPath();data.forEach((d,i)=>{const x=pad.left+(W-pad.left-pad.right)*i/(data.length-1),y=pad.top+(H-pad.top-pad.bottom)*(1-(d.p-minP)/range);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.strokeStyle='#2383e2';ctx.lineWidth=1.5;ctx.stroke();
 }
 
-// ===== 工具函数 =====
-function fmtPrice(n) { return n!=null ? '¥'+Number(n).toLocaleString('zh-CN',{maximumFractionDigits:2}) : '-'; }
-function num(n) { return n!=null ? Number(n).toLocaleString('zh-CN',{maximumFractionDigits:2}) : '-'; }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtN(n){if(n==null||isNaN(n))return'-';return Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function timeAgo(iso){const d=(Date.now()-new Date(iso).getTime())/1000;if(d<60)return'刚刚';if(d<3600)return Math.floor(d/60)+'分钟前';if(d<86400)return Math.floor(d/3600)+'小时前';return Math.floor(d/86400)+'天前'}
 
-// ===== 启动 =====
 loadData();
-setInterval(loadData, 5 * 60 * 1000);  // 每5分钟刷新
+setInterval(loadData, 300000);
 </script>
 </body>
 </html>
