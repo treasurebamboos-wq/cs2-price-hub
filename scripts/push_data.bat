@@ -4,7 +4,7 @@ cd /d "%~dp0.."
 
 echo [%date% %time%] 推送价格数据到GitHub...
 
-git add data/prices.json
+git add data/prices_lite.json
 git commit -m "auto: update prices.json [%date% %time%]"
 git push origin master
 

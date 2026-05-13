@@ -23,12 +23,17 @@ const CONFIG = {
     MAX_PAGES: 5,
     DETAIL_BATCH: 10,                  // 每批获取10个详情
     DATA_DIR: path.join(__dirname, 'data'),
-    DB_FILE: path.join(__dirname, 'data', 'prices.json'),
+    HISTORY_DIR: path.join(__dirname, 'data', 'history'),
+    DB_FILE: path.join(__dirname, 'data', 'prices.json'),           // 完整数据（本地用）
+    DB_LITE_FILE: path.join(__dirname, 'data', 'prices_lite.json'), // 精简版（推GitHub给Vercel用）
     HEADLESS: true,
+    // 价格快照：保留最近7天推GitHub，完整历史存本地
+    LITE_HISTORY_DAYS: 7,
 };
 
 // 确保目录
 if (!fs.existsSync(CONFIG.DATA_DIR)) fs.mkdirSync(CONFIG.DATA_DIR, { recursive: true });
+if (!fs.existsSync(CONFIG.HISTORY_DIR)) fs.mkdirSync(CONFIG.HISTORY_DIR, { recursive: true });
 
 // ==================== 数据库 ====================
 class Database {
@@ -49,7 +54,48 @@ class Database {
 
     save() {
         this.data.meta.lastUpdate = new Date().toISOString();
+
+        // 1. 保存完整数据（本地用，包含全部历史）
         fs.writeFileSync(CONFIG.DB_FILE, JSON.stringify(this.data, null, 2), 'utf-8');
+
+        // 2. 保存精简版（推GitHub给Vercel，只含最近7天快照 + 最近100条成交）
+        this._saveLite();
+
+        // 3. 保存每日快照（用于长期对比）
+        this._saveDailySnapshot();
+    }
+
+    _saveLite() {
+        const cutoff = Date.now() - CONFIG.LITE_HISTORY_DAYS * 86400000;
+        const lite = { items: {}, meta: { ...this.data.meta } };
+        for (const [key, item] of Object.entries(this.data.items)) {
+            lite.items[key] = {
+                ...item,
+                priceHistory: (item.priceHistory || []).filter(p => p.t > cutoff),
+                transactions: (item.transactions || []).slice(-100),
+            };
+        }
+        fs.writeFileSync(CONFIG.DB_LITE_FILE, JSON.stringify(lite, null, 2), 'utf-8');
+    }
+
+    _saveDailySnapshot() {
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const file = path.join(CONFIG.HISTORY_DIR, `${today}.json`);
+        // 每天只生成一次快照（取当天最新价格）
+        const snapshot = {};
+        for (const [key, item] of Object.entries(this.data.items)) {
+            snapshot[key] = {
+                name: item.name,
+                ask: item.prices?.buff?.ask,
+                bid: item.prices?.buff?.bid,
+                ask_volume: item.prices?.buff?.ask_volume,
+                steam_price: item.prices?.buff?.steam_price,
+                quick_price: item.prices?.buff?.quick_price,
+                volume_24h: this.getVolume24h(key),
+                updated_at: item.prices?.buff?.updated_at,
+            };
+        }
+        fs.writeFileSync(file, JSON.stringify({ date: today, snapshot }, null, 2), 'utf-8');
     }
 
     upsertFromList(raw) {
@@ -65,6 +111,9 @@ class Database {
         const it = this.data.items[key];
         it.name = raw.name || it.name;
         it.goods_id = raw.goods_id || it.goods_id;
+        if (!it.priceHistory) it.priceHistory = [];
+        if (!it.transactions) it.transactions = [];
+        if (!it.prices) it.prices = {};
 
         it.prices.buff = {
             ask: raw.sell_min_price,
@@ -76,12 +125,10 @@ class Database {
             updated_at: new Date().toISOString(),
         };
 
-        // 追加价格快照（用于自建K线）
+        // 追加价格快照（用于自建K线），全量保留不截断
         it.priceHistory.push({
             t: Date.now(), p: raw.sell_min_price, v: raw.sell_num,
         });
-        // 保留7天（每5分钟 => 2016条）
-        if (it.priceHistory.length > 2100) it.priceHistory = it.priceHistory.slice(-2016);
     }
 
     // 写入从详情页获取的成交记录
@@ -98,9 +145,8 @@ class Database {
                 existing.add(k);
             }
         }
-        // 按时间排序 & 保留最近500条
+        // 按时间排序，全量保留不截断
         it.transactions.sort((a, b) => a.time - b.time);
-        if (it.transactions.length > 500) it.transactions = it.transactions.slice(-500);
     }
 
     // 写入Buff价格历史
@@ -392,6 +438,41 @@ function apiHandler(req, res) {
 
     if (p === '/api/stats') return json(res, { success: true, data: db.stats() });
 
+    // 查询某天的历史快照
+    if (p === '/api/history') {
+        const date = q.date; // YYYY-MM-DD
+        if (!date) {
+            // 返回可用日期列表
+            try {
+                const files = fs.readdirSync(CONFIG.HISTORY_DIR).filter(f => f.endsWith('.json')).map(f => f.replace('.json', '')).sort();
+                return json(res, { success: true, data: files });
+            } catch { return json(res, { success: true, data: [] }); }
+        }
+        const file = path.join(CONFIG.HISTORY_DIR, `${date}.json`);
+        if (!fs.existsSync(file)) return json(res, { success: false, error: '该日期无数据' }, 404);
+        try {
+            const data = JSON.parse(fs.readFileSync(file, 'utf-8'));
+            return json(res, { success: true, data });
+        } catch { return json(res, { success: false, error: '读取失败' }, 500); }
+    }
+
+    // 查询某个物品的完整价格历史
+    if (p.startsWith('/api/history/item/')) {
+        const name = decodeURIComponent(p.replace('/api/history/item/', ''));
+        const item = db.get(name);
+        if (!item) return json(res, { success: false, error: 'Not found' }, 404);
+        return json(res, {
+            success: true,
+            data: {
+                market_hash_name: item.market_hash_name,
+                name: item.name,
+                priceHistory: item.priceHistory || [],
+                transactions: item.transactions || [],
+                buffPriceHistory: item.buffPriceHistory || [],
+            }
+        });
+    }
+
     if (p === '/api/scrape') {
         scraper.runList();
         return json(res, { success: true, message: '爬取已启动' });
@@ -433,7 +514,7 @@ function serveFrontend(res) {
 function ts() { return new Date().toLocaleTimeString('zh-CN'); }
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// 自动推送数据到GitHub
+// 自动推送精简版数据到GitHub
 function gitPush() {
     const cwd = __dirname;
     const run = (cmd, args) => new Promise((resolve) => {
@@ -444,7 +525,7 @@ function gitPush() {
     });
 
     (async () => {
-        const ok1 = await run('git', ['add', 'data/prices.json']);
+        const ok1 = await run('git', ['add', 'data/prices_lite.json']);
         if (!ok1) return;
         const ok2 = await run('git', ['commit', '-m', `auto: update prices ${new Date().toLocaleString('zh-CN')}`]);
         if (!ok2) { console.log('   📌 数据无变化，跳过推送'); return; }
