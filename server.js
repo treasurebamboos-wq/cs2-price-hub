@@ -73,6 +73,12 @@ class Database {
                 ...item,
                 priceHistory: (item.priceHistory || []).filter(p => p.t > cutoff),
                 transactions: (item.transactions || []).slice(-100),
+                // 精简版不需要完整sell_order详情，只保留摘要
+                sell_order_summary: item.sell_order_summary ? {
+                    total: item.sell_order_summary.total,
+                    price_range: item.sell_order_summary.price_range,
+                    updated_at: item.sell_order_summary.updated_at,
+                } : null,
             };
         }
         fs.writeFileSync(CONFIG.DB_LITE_FILE, JSON.stringify(lite, null, 2), 'utf-8');
@@ -89,8 +95,11 @@ class Database {
                 ask: item.prices?.buff?.ask,
                 bid: item.prices?.buff?.bid,
                 ask_volume: item.prices?.buff?.ask_volume,
-                steam_price: item.prices?.buff?.steam_price,
+                steam_price_cny: item.prices?.buff?.steam_price_cny,
+                steam_price_usd: item.prices?.buff?.steam_price_usd,
                 quick_price: item.prices?.buff?.quick_price,
+                sell_reference_price: item.detail?.sell_reference_price || null,
+                recent_sold_count: item.detail?.recent_sold_count || 0,
                 volume_24h: this.getVolume24h(key),
                 updated_at: item.prices?.buff?.updated_at,
             };
@@ -110,7 +119,11 @@ class Database {
         }
         const it = this.data.items[key];
         it.name = raw.name || it.name;
+        it.short_name = raw.short_name || it.short_name || null;
         it.goods_id = raw.goods_id || it.goods_id;
+        it.appid = raw.appid || it.appid || 730;
+        it.icon_url = raw.icon_url || it.icon_url || null;
+        it.transacted_num = raw.transacted_num || it.transacted_num || 0;
         if (!it.priceHistory) it.priceHistory = [];
         if (!it.transactions) it.transactions = [];
         if (!it.prices) it.prices = {};
@@ -120,7 +133,8 @@ class Database {
             ask_volume: raw.sell_num,
             bid: raw.buy_max_price,
             bid_volume: raw.buy_num,
-            steam_price: raw.steam_price,
+            steam_price_cny: raw.steam_price_cny,
+            steam_price_usd: raw.steam_price_usd,
             quick_price: raw.quick_price,
             updated_at: new Date().toISOString(),
         };
@@ -154,6 +168,51 @@ class Database {
         const it = this.data.items[marketHashName];
         if (!it) return;
         it.buffPriceHistory = history;  // [[timestamp, price], ...]
+    }
+
+    // 写入商品详情信息（来自 /goods/info 接口）
+    upsertGoodsInfo(marketHashName, info) {
+        const it = this.data.items[marketHashName];
+        if (!it) return;
+        it.detail = {
+            recent_sold_count: info.recent_sold_count ?? it.detail?.recent_sold_count ?? 0,
+            sell_reference_price: info.sell_reference_price ? parseFloat(info.sell_reference_price) : null,
+            market_min_price: info.market_min_price ? parseFloat(info.market_min_price) : null,
+            paintwear_range: info.paintwear_range || null,
+            paintwear_choices: info.paintwear_choices || null,
+            steam_market_url: info.steam_market_url || null,
+            containers: info.containers || null,
+            user_show_count: info.user_show_count ?? 0,
+            has_buff_price_history: info.has_buff_price_history ?? false,
+            updated_at: new Date().toISOString(),
+        };
+        // 也更新图标（详情页的更准确）
+        if (info.goods_info?.original_icon_url || info.goods_info?.icon_url) {
+            it.icon_url = info.goods_info.original_icon_url || info.goods_info.icon_url;
+        }
+        if (info.steam_market_url) it.steam_market_url = info.steam_market_url;
+    }
+
+    // 写入在售订单分布（来自 /sell_order 接口）
+    upsertSellOrders(marketHashName, orders) {
+        const it = this.data.items[marketHashName];
+        if (!it) return;
+        // 只存摘要：价格分布 + 前5个挂单详情
+        it.sell_order_summary = {
+            total: orders.length,
+            price_range: orders.length > 0 ? {
+                min: Math.min(...orders.map(o => o.price)),
+                max: Math.max(...orders.map(o => o.price)),
+                avg: +(orders.reduce((s, o) => s + o.price, 0) / orders.length).toFixed(2),
+            } : null,
+            top_listings: orders.slice(0, 5).map(o => ({
+                price: o.price,
+                paintwear: o.paintwear,
+                stickers: o.stickers,
+                tradable_cooldown: o.tradable_cooldown,
+            })),
+            updated_at: new Date().toISOString(),
+        };
     }
 
     // ---- 查询方法 ----
@@ -234,13 +293,18 @@ async function scrapeList(browser) {
                 items.push({
                     market_hash_name: raw.market_hash_name,
                     name: raw.name,
+                    short_name: raw.short_name || null,
                     goods_id: raw.id,
+                    appid: raw.appid || 730,
                     sell_min_price: parseFloat(raw.sell_min_price),
                     sell_num: raw.sell_num,
                     buy_max_price: raw.buy_max_price ? parseFloat(raw.buy_max_price) : null,
                     buy_num: raw.buy_num,
-                    steam_price: raw.goods_info?.steam_price_cny ? parseFloat(raw.goods_info.steam_price_cny) : null,
+                    steam_price_cny: raw.goods_info?.steam_price_cny ? parseFloat(raw.goods_info.steam_price_cny) : null,
+                    steam_price_usd: raw.goods_info?.steam_price ? parseFloat(raw.goods_info.steam_price) : null,
                     quick_price: raw.quick_price ? parseFloat(raw.quick_price) : null,
+                    icon_url: raw.goods_info?.icon_url || raw.goods_info?.original_icon_url || null,
+                    transacted_num: raw.transacted_num || 0,
                 });
             }
         } catch {}
@@ -255,43 +319,72 @@ async function scrapeList(browser) {
     return items;
 }
 
-// ==================== 爬虫：详情页（成交记录+价格历史） ====================
+// ==================== 爬虫：详情页（商品信息+在售订单+成交记录+价格历史） ====================
 async function scrapeDetail(browser, item) {
     const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, locale: 'zh-CN' });
     const page = await ctx.newPage();
 
-    const transactions = [];
-    let priceHistory = [];
+    const result = {
+        transactions: [],
+        priceHistory: [],
+        goodsInfo: null,
+        sellOrders: [],
+    };
 
     page.on('response', async (res) => {
         const u = res.url();
         if (res.status() !== 200) return;
 
-        // 成交记录
-        if (u.includes('bill_order')) {
-            try {
+        try {
+            // 商品详细信息 /goods/info
+            if (u.includes('/goods/info') && !u.includes('sell_order') && !u.includes('buy_order')) {
+                const json = await res.json();
+                if (json.code === 'OK' && json.data) {
+                    result.goodsInfo = json.data;
+                }
+                return;
+            }
+
+            // 在售订单 /sell_order
+            if (u.includes('sell_order') && !u.includes('history') && !u.includes('create') && !u.includes('to_deliver')) {
+                const json = await res.json();
+                if (json.code === 'OK') {
+                    for (const o of (json.data?.items || [])) {
+                        result.sellOrders.push({
+                            price: parseFloat(o.price),
+                            paintwear: o.asset_info?.paintwear || null,
+                            stickers: o.asset_info?.info?.stickers || null,
+                            tradable_cooldown: o.tradable_cooldown || null,
+                        });
+                    }
+                }
+                return;
+            }
+
+            // 成交记录 /bill_order
+            if (u.includes('bill_order')) {
                 const json = await res.json();
                 if (json.code === 'OK') {
                     for (const tx of (json.data?.items || [])) {
-                        transactions.push({
+                        result.transactions.push({
                             price: parseFloat(tx.price),
                             time: tx.transact_time || tx.updated_at,
                             paintwear: tx.asset_info?.paintwear,
                         });
                     }
                 }
-            } catch {}
-        }
+                return;
+            }
 
-        // 价格历史
-        if (u.includes('price_history')) {
-            try {
+            // 价格历史 /price_history
+            if (u.includes('price_history')) {
                 const json = await res.json();
                 if (json.code === 'OK' && json.data?.price_history) {
-                    priceHistory = json.data.price_history; // [[ts, price], ...]
+                    result.priceHistory = json.data.price_history;
                 }
-            } catch {}
-        }
+                return;
+            }
+        } catch {}
     });
 
     try {
@@ -300,7 +393,7 @@ async function scrapeDetail(browser, item) {
         });
         await page.waitForTimeout(4000);
 
-        // 尝试点击"成交记录"标签
+        // 尝试点击"成交记录"标签，触发 bill_order 接口
         try {
             const tabBtns = await page.$$('.tab-cont .tab-pane, .detail-tab li, [data-target]');
             for (const btn of tabBtns) {
@@ -318,7 +411,7 @@ async function scrapeDetail(browser, item) {
     }
 
     await ctx.close();
-    return { transactions, priceHistory };
+    return result;
 }
 
 // ==================== 爬虫调度 ====================
@@ -363,6 +456,14 @@ class Scraper {
                 console.log(`   📜 ${item.name} (${item.goods_id})`);
                 const detail = await scrapeDetail(this.browser, item);
 
+                if (detail.goodsInfo) {
+                    db.upsertGoodsInfo(item.market_hash_name, detail.goodsInfo);
+                    console.log(`      商品信息: ✅ 近期成交${detail.goodsInfo.recent_sold_count || 0}件`);
+                }
+                if (detail.sellOrders.length > 0) {
+                    db.upsertSellOrders(item.market_hash_name, detail.sellOrders);
+                    console.log(`      在售订单: ${detail.sellOrders.length} 个`);
+                }
                 if (detail.transactions.length > 0) {
                     db.upsertTransactions(item.market_hash_name, detail.transactions);
                     console.log(`      成交记录: ${detail.transactions.length} 条`);
@@ -487,10 +588,14 @@ function apiHandler(req, res) {
 }
 
 function enrichItem(item) {
+    const buff = item.prices?.buff || {};
     return {
         ...item,
         volume_24h: db.getVolume24h(item.market_hash_name),
         transaction_count: item.transactions?.length || 0,
+        // 便捷字段
+        buff_steam_ratio: (buff.ask && buff.steam_price_cny && buff.steam_price_cny > 0)
+            ? +(buff.ask / buff.steam_price_cny).toFixed(4) : null,
     };
 }
 
