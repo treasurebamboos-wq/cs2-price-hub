@@ -52,6 +52,54 @@ class Database {
         return { items: {}, meta: { totalScrapes: 0, lastUpdate: null } };
     }
 
+    // 从磁盘重新加载，合并外部脚本写入的字段（如csqaq、csqaqHistory）
+    reload() {
+        const fresh = this._load();
+        let merged = 0;
+        for (const [key, freshItem] of Object.entries(fresh.items)) {
+            if (!this.data.items[key]) {
+                // 新饰品，直接添加
+                this.data.items[key] = freshItem;
+                merged++;
+            } else {
+                // 已有饰品，合并外部新增字段
+                const existing = this.data.items[key];
+                // 合并 csqaq（排行榜+详情+存世量）
+                if (freshItem.csqaq && (!existing.csqaq || freshItem.csqaq.detail_at > (existing.csqaq.detail_at || ''))) {
+                    existing.csqaq = freshItem.csqaq;
+                    merged++;
+                }
+                // 合并 csqaqHistory（历史价格曲线）— 用fetched_at判断新鲜度
+                if (freshItem.csqaqHistory &&
+                    (!existing.csqaqHistory ||
+                     (freshItem.csqaqHistory.fetched_at || '') > (existing.csqaqHistory.fetched_at || ''))) {
+                    existing.csqaqHistory = freshItem.csqaqHistory;
+                    merged++;
+                }
+                // 合并priceHistory中来自csqaq的数据
+                if (freshItem.priceHistory?.length > (existing.priceHistory?.length || 0)) {
+                    const existingDates = new Set(
+                        (existing.priceHistory || []).map(p => new Date(p.t).toISOString().slice(0, 10))
+                    );
+                    let added = 0;
+                    for (const p of freshItem.priceHistory) {
+                        const dateStr = new Date(p.t).toISOString().slice(0, 10);
+                        if (!existingDates.has(dateStr)) {
+                            if (!existing.priceHistory) existing.priceHistory = [];
+                            existing.priceHistory.push(p);
+                            existingDates.add(dateStr);
+                            added++;
+                        }
+                    }
+                    if (added > 0) {
+                        existing.priceHistory.sort((a, b) => a.t - b.t);
+                    }
+                }
+            }
+        }
+        return merged;
+    }
+
     save() {
         this.data.meta.lastUpdate = new Date().toISOString();
 
@@ -73,6 +121,8 @@ class Database {
                 ...item,
                 priceHistory: (item.priceHistory || []).filter(p => p.t > cutoff),
                 transactions: (item.transactions || []).slice(-100),
+                // 精简版保留csqaqHistory（Vercel前端需要用来画图）
+                csqaqHistory: item.csqaqHistory || null,
                 // 精简版不需要完整sell_order详情，只保留摘要
                 sell_order_summary: item.sell_order_summary ? {
                     total: item.sell_order_summary.total,
@@ -217,10 +267,11 @@ class Database {
 
     // ---- 查询方法 ----
     all()            { return Object.values(this.data.items); }
-    get(name)        { return this.data.items[name]; }
+    allWithKeys()    { return Object.entries(this.data.items).map(([k,v]) => ({ ...v, market_hash_name: k })); }
+    get(name)        { return this.data.items[name] ? { ...this.data.items[name], market_hash_name: name } : null; }
     search(q) {
         const ql = q.toLowerCase();
-        return this.all().filter(i =>
+        return this.allWithKeys().filter(i =>
             i.market_hash_name?.toLowerCase().includes(ql) ||
             i.name?.toLowerCase().includes(ql)
         );
@@ -513,20 +564,24 @@ function apiHandler(req, res) {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
     if (p === '/api/prices/latest') {
-        const limit = Math.min(parseInt(q.limit) || 100, 500);
+        const limit = Math.min(parseInt(q.limit) || 100, 1000);
         const offset = parseInt(q.offset) || 0;
         const source = q.source;
-        let items = db.all();
+        let items = db.allWithKeys();
+
+        // 只返回有CSQAQ数据的饰品
+        items = items.filter(item => item.csqaq?.id);
 
         // 排序：按在售数量降序
         items.sort((a, b) => (b.prices?.buff?.ask_volume || 0) - (a.prices?.buff?.ask_volume || 0));
+        const total = items.length;
         items = items.slice(offset, offset + limit).map(enrichItem);
 
-        return json(res, { success: true, data: items, total: db.all().length });
+        return json(res, { success: true, data: items, total });
     }
 
     if (p === '/api/search') {
-        const results = db.search(q.q || '').slice(0, 50).map(enrichItem);
+        const results = db.search(q.q || '').filter(item => item.csqaq?.id).slice(0, 50).map(enrichItem);
         return json(res, { success: true, data: results, total: results.length });
     }
 
@@ -570,8 +625,81 @@ function apiHandler(req, res) {
                 priceHistory: item.priceHistory || [],
                 transactions: item.transactions || [],
                 buffPriceHistory: item.buffPriceHistory || [],
+                csqaqHistory: item.csqaqHistory || null,
             }
         });
+    }
+
+    // 获取同一皮肤的全部变体（含所有磨损度 + StatTrak™ / 普通版）
+    // 同时利用 CSQAQ statisticList 补全 DB 中缺失的磨损变体
+    if (p.startsWith('/api/variants/')) {
+        const inputName = decodeURIComponent(p.replace('/api/variants/', ''));
+        // 同时去掉 StatTrak™ 前缀和磨损后缀，得到皮肤真实基础名
+        const trueBaseName = inputName
+            .replace(/StatTrak™\s*/g, '')
+            .replace(/\s*\((Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\)\s*$/, '')
+            .trim();
+
+        // ── Step 1: 从 DB 找到所有已知变体 ──
+        const variants = [];
+        const dbKeys = new Set();
+        for (const [key, item] of Object.entries(db.data.items)) {
+            const itemBase = key
+                .replace(/StatTrak™\s*/g, '')
+                .replace(/\s*\((Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\)\s*$/, '')
+                .trim();
+            if (itemBase === trueBaseName) {
+                const enriched = enrichItem({ ...item, market_hash_name: key });
+                enriched.isStatTrak = key.includes('StatTrak™');
+                variants.push(enriched);
+                dbKeys.add(key);
+            }
+        }
+
+        // ── Step 2: 用 CSQAQ statisticList 补全 DB 缺失的磨损变体 ──
+        const CN_TO_EN_WEAR = {
+            '久经沙场': 'Field-Tested', '崭新出厂': 'Factory New',
+            '略有磨损': 'Minimal Wear', '战痕累累': 'Well-Worn', '破损不堪': 'Battle-Scarred',
+        };
+        // 找一个有 statisticList 的变体
+        const srcItem = variants.find(v => v.csqaq?.statisticList?.length > 0);
+        if (srcItem) {
+            for (const sl of srcItem.csqaq.statisticList) {
+                const enWear = CN_TO_EN_WEAR[sl.exterior];
+                if (!enWear) continue;
+                const isSLST = sl.quality === 'StatTrak™';
+                // 根据 trueBaseName 构造英文 market_hash_name
+                // ★ 刀具: "★ M9 Bayonet..." → ST版为 "★ StatTrak™ M9 Bayonet..."
+                let expectedKey;
+                if (isSLST) {
+                    expectedKey = trueBaseName.startsWith('★ ')
+                        ? `★ StatTrak™ ${trueBaseName.slice(2)} (${enWear})`
+                        : `StatTrak™ ${trueBaseName} (${enWear})`;
+                } else {
+                    expectedKey = `${trueBaseName} (${enWear})`;
+                }
+                if (!dbKeys.has(expectedKey)) {
+                    // 补全占位变体（无价格数据，仅供显示 Tab 用）
+                    variants.push({
+                        market_hash_name: expectedKey,
+                        isStatTrak: isSLST,
+                        statistic: sl.statistic,
+                        prices: {},
+                        _fromStatList: true,
+                    });
+                    dbKeys.add(expectedKey);
+                }
+            }
+        }
+
+        return json(res, { success: true, data: variants, baseName: trueBaseName });
+    }
+
+    // 从磁盘重新加载数据库（用于合并外部脚本写入的数据）
+    if (p === '/api/reload') {
+        const merged = db.reload();
+        db.save();
+        return json(res, { success: true, message: `已从磁盘重新加载，合并了 ${merged} 个变更` });
     }
 
     if (p === '/api/scrape') {

@@ -1,5 +1,6 @@
 node_modules/
-data/history/
-data/prices.json
+data/
 *.log
 .env
+/tmp/
+server.log

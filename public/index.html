@@ -6,322 +6,1438 @@
 <title>CS2 Price Hub</title>
 <style>
 :root {
-    --bg:#ffffff; --bg-secondary:#f7f7f5; --bg-hover:#f1f1ef; --bg-active:#e8e8e5;
-    --border:#e3e3e0; --border-light:#efefed;
-    --text:#1f1f1f; --text-secondary:#6b6b6b; --text-tertiary:#9b9b9b;
-    --accent:#2383e2; --accent-light:#e8f0fe;
-    --green:#448361; --green-bg:#edf7f0; --red:#c4554d; --red-bg:#fbe9e7;
-    --orange:#c77d2e; --orange-bg:#fdf1e3; --purple:#7c5cba; --purple-bg:#f0ecf9;
-    --radius:6px; --shadow-lg:0 12px 40px rgba(0,0,0,0.12);
-    --font:-apple-system,'Segoe UI','Helvetica Neue',sans-serif;
+    --bg: #ffffff;
+    --bg-secondary: #f7f7f5;
+    --bg-hover: #f1f1ef;
+    --bg-active: #e8e8e5;
+    --border: #e3e3e0;
+    --border-light: #efefed;
+    --text: #1f1f1f;
+    --text-secondary: #6b6b6b;
+    --text-tertiary: #9b9b9b;
+    --accent: #2383e2;
+    --accent-light: #e8f0fe;
+    --green: #448361;
+    --green-bg: #edf7f0;
+    --red: #c4554d;
+    --red-bg: #fbe9e7;
+    --orange: #c77d2e;
+    --orange-bg: #fdf1e3;
+    --purple: #7c5cba;
+    --purple-bg: #f0ecf9;
+    --teal: #2a9d8f;
+    --teal-bg: #e6f5f3;
+    --radius: 6px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+    --font: -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif;
 }
-*{margin:0;padding:0;box-sizing:border-box}
-html{font-size:15px}
-body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 15px; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.5; -webkit-font-smoothing: antialiased; }
 
-.header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-light);padding:0 max(24px,calc((100vw - 1200px)/2))}
-.header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:54px}
-.header h1{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}
-.header h1 .icon{font-size:20px}
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;color:var(--text-secondary);background:var(--bg-secondary)}
-.badge b{color:var(--text);font-weight:600}
+/* Header */
+.header { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-light); padding: 0 max(24px, calc((100vw - 1200px) / 2)); }
+.header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 54px; }
+.header h1 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.header h1 .icon { font-size: 20px; }
+.header-right { display: flex; align-items: center; gap: 6px; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 12px; color: var(--text-secondary); background: var(--bg-secondary); }
+.badge b { color: var(--text); font-weight: 600; }
+.btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: var(--radius); font-size: 13px; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; transition: all 0.15s; font-weight: 500; }
+.btn:hover { background: var(--bg-hover); }
 
-.toolbar{padding:16px max(24px,calc((100vw - 1200px)/2));display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.search-box{flex:1;min-width:240px;max-width:400px;position:relative}
-.search-box .ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);font-size:14px;pointer-events:none}
-.search-box input{width:100%;padding:7px 12px 7px 32px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--bg);outline:none;transition:border 0.15s}
-.search-box input::placeholder{color:var(--text-tertiary)}
-.search-box input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(35,131,226,0.12)}
-.sort-select{padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text);background:var(--bg);cursor:pointer;outline:none}
-.item-count{font-size:13px;color:var(--text-tertiary);margin-left:auto}
+/* Toolbar */
+.toolbar { padding: 12px max(24px, calc((100vw - 1200px) / 2)); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.search-box { flex: 1; min-width: 200px; max-width: 360px; position: relative; }
+.search-box .s-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-tertiary); font-size: 14px; pointer-events: none; }
+.search-box input { width: 100%; padding: 7px 12px 7px 32px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); background: var(--bg); outline: none; transition: border 0.15s; }
+.search-box input::placeholder { color: var(--text-tertiary); }
+.search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(35,131,226,0.12); }
+.sort-select, .filter-select { padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text); background: var(--bg); cursor: pointer; outline: none; }
+.item-count { font-size: 13px; color: var(--text-tertiary); margin-left: auto; }
 
-.table-container{padding:0 max(24px,calc((100vw - 1200px)/2)) 24px;overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-thead th{padding:8px 12px;font-size:12px;font-weight:500;color:var(--text-tertiary);text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:54px;background:var(--bg);z-index:10}
-tbody tr{border-bottom:1px solid var(--border-light);transition:background 0.1s;cursor:pointer}
-tbody tr:hover{background:var(--bg-secondary)}
-td{padding:10px 12px;font-size:14px;white-space:nowrap}
+/* Wear pills */
+.wear-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+.wear-pill { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); background: var(--bg); color: var(--text-secondary); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.wear-pill:hover { background: var(--bg-hover); }
+.wear-pill.active { color: #fff; border-color: transparent; }
+.wear-pill[data-wear="all"].active { background: var(--accent); }
+.wear-pill[data-wear="fn"].active { background: var(--green); }
+.wear-pill[data-wear="mw"].active { background: var(--accent); }
+.wear-pill[data-wear="ft"].active { background: var(--orange); }
+.wear-pill[data-wear="ww"].active { background: var(--red); }
+.wear-pill[data-wear="bs"].active { background: #8b5a5a; }
+.wear-pill[data-wear="none"].active { background: var(--purple); }
 
-.cell-name{display:flex;align-items:center;gap:10px;min-width:220px;white-space:normal}
-.cell-name img{width:44px;height:34px;object-fit:contain;border-radius:4px;background:var(--bg-secondary);flex-shrink:0}
-.cell-name .no-img{width:44px;height:34px;border-radius:4px;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text-tertiary);flex-shrink:0}
-.cell-name .text .cn{font-weight:500;font-size:14px;line-height:1.3}
-.cell-name .text .en{font-size:11px;color:var(--text-tertiary);line-height:1.3;margin-top:1px}
-.cell-price{font-weight:600;font-variant-numeric:tabular-nums}
-.cell-price.ask{color:var(--orange)}.cell-price.bid{color:var(--accent)}.cell-price.steam{color:var(--text-secondary)}
-.cell-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500}
-.tag-green{background:var(--green-bg);color:var(--green)}.tag-orange{background:var(--orange-bg);color:var(--orange)}.tag-muted{background:var(--bg-secondary);color:var(--text-tertiary)}
-.cell-time{font-size:12px;color:var(--text-tertiary)}.cell-muted{color:var(--text-tertiary)}
+/* Table */
+.table-container { padding: 0 max(24px, calc((100vw - 1200px) / 2)) 24px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th { padding: 8px 12px; font-size: 12px; font-weight: 500; color: var(--text-tertiary); text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; position: sticky; top: 54px; background: var(--bg); z-index: 10; cursor: pointer; user-select: none; }
+thead th:hover { background: var(--bg-secondary); }
+tbody tr { border-bottom: 1px solid var(--border-light); transition: background 0.1s; cursor: pointer; }
+tbody tr:hover { background: var(--bg-secondary); }
+td { padding: 10px 12px; font-size: 14px; white-space: nowrap; }
+.cell-name { display: flex; align-items: center; gap: 10px; min-width: 250px; white-space: normal; }
+.cell-name img { width: 48px; height: 36px; object-fit: contain; border-radius: 4px; background: var(--bg-secondary); flex-shrink: 0; }
+.cell-name .no-img { width: 48px; height: 36px; border-radius: 4px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-tertiary); flex-shrink: 0; }
+.cell-name .text .cn { font-weight: 500; font-size: 14px; line-height: 1.3; }
+.cell-name .text .en { font-size: 11px; color: var(--text-tertiary); line-height: 1.3; margin-top: 1px; }
+.cell-name .text .meta { display: flex; align-items: center; gap: 5px; margin-top: 3px; }
+.cell-price { font-weight: 600; font-variant-numeric: tabular-nums; }
+.cell-price.ask { color: var(--orange); }
+.cell-price.bid { color: var(--accent); }
+.cell-price.steam { color: var(--text-secondary); }
+.wear-badge { display: inline-flex; align-items: center; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; line-height: 1.6; }
+.wear-fn { background: #edf7f0; color: #2d6a4f; }
+.wear-mw { background: #e8f0fe; color: #1a5fb4; }
+.wear-ft { background: #fdf1e3; color: #9a6700; }
+.wear-ww { background: #fbe9e7; color: #c4554d; }
+.wear-bs { background: #f3e8e8; color: #8b5a5a; }
+.src-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 2px; vertical-align: middle; }
+.src-csqaq { background: var(--teal); }
+.variant-badge { display: inline-flex; align-items: center; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 500; background: var(--purple-bg); color: var(--purple); }
+.cell-tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+.tag-green { background: var(--green-bg); color: var(--green); }
+.tag-orange { background: var(--orange-bg); color: var(--orange); }
+.tag-red { background: var(--red-bg); color: var(--red); }
+.tag-muted { background: var(--bg-secondary); color: var(--text-tertiary); }
+.cell-time { font-size: 12px; color: var(--text-tertiary); }
+.cell-muted { color: var(--text-tertiary); }
 
-.pagination{display:flex;justify-content:center;gap:4px;padding:8px 24px 32px}
-.pagination button{min-width:32px;height:32px;border:none;border-radius:var(--radius);background:transparent;color:var(--text-secondary);font-size:13px;cursor:pointer;transition:all 0.1s}
-.pagination button:hover{background:var(--bg-hover)}.pagination button.active{background:var(--accent);color:#fff;font-weight:600}
+/* Pagination */
+.pagination { display: flex; justify-content: center; gap: 4px; padding: 8px 24px 32px; }
+.pagination button { min-width: 32px; height: 32px; border: none; border-radius: var(--radius); background: transparent; color: var(--text-secondary); font-size: 13px; cursor: pointer; transition: all 0.1s; }
+.pagination button:hover { background: var(--bg-hover); }
+.pagination button.active { background: var(--accent); color: #fff; font-weight: 600; }
 
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.25);z-index:200;justify-content:center;align-items:flex-start;padding:48px 16px;overflow-y:auto}
-.modal-overlay.active{display:flex}
-.modal{background:var(--bg);border-radius:12px;width:100%;max-width:760px;box-shadow:var(--shadow-lg);animation:modalIn .2s ease}
-@keyframes modalIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.modal-header{display:flex;align-items:flex-start;gap:14px;padding:24px 28px 0}
-.modal-header img{width:64px;height:48px;object-fit:contain;border-radius:6px;background:var(--bg-secondary);flex-shrink:0}
-.modal-header .no-img{width:64px;height:48px;border-radius:6px;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--text-tertiary);flex-shrink:0}
-.modal-header .info{flex:1}.modal-header .info h2{font-size:18px;font-weight:600;line-height:1.3}
-.modal-header .info .sub{font-size:13px;color:var(--text-tertiary);margin-top:2px}
-.modal-close{width:28px;height:28px;border-radius:var(--radius);border:none;background:transparent;color:var(--text-tertiary);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.modal-close:hover{background:var(--bg-hover);color:var(--text)}
-.modal-body{padding:20px 28px 28px}
-.section{margin-bottom:24px}.section:last-child{margin-bottom:0}
-.section-title{font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border-light)}
-.metric-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
-.metric{background:var(--bg-secondary);border-radius:var(--radius);padding:12px 14px}
-.metric .label{font-size:11px;color:var(--text-tertiary);margin-bottom:4px;font-weight:500}
-.metric .val{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
-.metric .val.c-ask{color:var(--orange)}.metric .val.c-bid{color:var(--accent)}.metric .val.c-green{color:var(--green)}
-.chart-wrap canvas{width:100%;height:180px;border-radius:var(--radius);cursor:crosshair}
-.chart-tooltip{display:none;position:absolute;z-index:10;pointer-events:none;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 1px 2px rgba(0,0,0,0.04);padding:6px 10px;font-size:12px;line-height:1.5;white-space:nowrap}
-.chart-tooltip .tt-price{font-weight:600;color:var(--accent);font-size:14px}.chart-tooltip .tt-time{color:var(--text-tertiary)}.chart-tooltip .tt-vol{color:var(--green);font-size:11px}
-.tx-scroll{max-height:300px;overflow-y:auto}
-.tx-table{width:100%;border-collapse:collapse}
-.tx-table th{text-align:left;padding:6px 8px;font-size:11px;font-weight:500;color:var(--text-tertiary);border-bottom:1px solid var(--border-light);position:static}
-.tx-table td{padding:6px 8px;font-size:13px;border-bottom:1px solid var(--border-light)}
-.empty{text-align:center;padding:60px 24px;color:var(--text-tertiary)}.empty .icon{font-size:36px;margin-bottom:12px}
-@media(max-width:768px){.toolbar{padding:12px 16px}.table-container{padding:0 16px 16px}.modal-header,.modal-body{padding-left:20px;padding-right:20px}.metric-grid{grid-template-columns:repeat(2,1fr)}}
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.25); z-index: 200; justify-content: center; align-items: flex-start; padding: 48px 16px; overflow-y: auto; }
+.modal-overlay.active { display: flex; }
+.modal { background: var(--bg); border-radius: 12px; width: 100%; max-width: 800px; box-shadow: var(--shadow-lg); animation: modalIn 0.2s ease; }
+@keyframes modalIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.modal-header { display: flex; align-items: flex-start; gap: 14px; padding: 24px 28px 0; }
+.modal-header img { width: 72px; height: 54px; object-fit: contain; border-radius: 6px; background: var(--bg-secondary); flex-shrink: 0; }
+.modal-header .no-img { width: 72px; height: 54px; border-radius: 6px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--text-tertiary); flex-shrink: 0; }
+.modal-header .info { flex: 1; }
+.modal-header .info h2 { font-size: 18px; font-weight: 600; line-height: 1.3; }
+.modal-header .info .sub { font-size: 13px; color: var(--text-tertiary); margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.modal-header .info .sub a { color: var(--accent); text-decoration: none; }
+.modal-header .info .sub a:hover { text-decoration: underline; }
+.modal-close { width: 28px; height: 28px; border-radius: var(--radius); border: none; background: transparent; color: var(--text-tertiary); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.modal-close:hover { background: var(--bg-hover); color: var(--text); }
+
+/* Wear tabs in modal */
+.wear-tabs { display: flex; gap: 2px; padding: 14px 28px 0; overflow-x: auto; }
+.wear-tab { padding: 6px 16px; border-radius: 6px 6px 0 0; font-size: 13px; font-weight: 500; border: 1px solid transparent; border-bottom: none; background: transparent; color: var(--text-tertiary); cursor: pointer; transition: all 0.15s; white-space: nowrap; position: relative; }
+.wear-tab:hover { background: var(--bg-hover); color: var(--text-secondary); }
+.wear-tab.active { background: var(--bg); color: var(--text); border-color: var(--border); font-weight: 600; }
+.wear-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--bg); }
+.wear-tab .tab-price { font-size: 11px; color: var(--text-tertiary); margin-left: 4px; font-weight: 400; }
+.wear-tab.active .tab-price { color: var(--orange); font-weight: 600; }
+.wear-tabs-border { border-bottom: 1px solid var(--border); margin: 0 28px; }
+
+/* Modal body */
+.modal-body { padding: 20px 28px 28px; }
+.section { margin-bottom: 24px; }
+.section:last-child { margin-bottom: 0; }
+.section-title { font-size: 12px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border-light); }
+
+/* Metric grid */
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.metric { background: var(--bg-secondary); border-radius: var(--radius); padding: 12px 14px; }
+.metric .label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 4px; font-weight: 500; }
+.metric .val { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.metric .val.c-ask { color: var(--orange); }
+.metric .val.c-bid { color: var(--accent); }
+.metric .val.c-green { color: var(--green); }
+.metric .val.c-red { color: var(--red); }
+
+/* Price comparison */
+.price-compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.price-card { background: var(--bg-secondary); border-radius: var(--radius); padding: 14px; text-align: center; }
+.price-card .platform { font-size: 11px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.price-card .price { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.price-card .diff { font-size: 11px; margin-top: 4px; }
+.price-card .diff.up { color: var(--green); }
+.price-card .diff.down { color: var(--red); }
+.price-card.highlight { border: 2px solid var(--accent); background: var(--accent-light); }
+
+/* Chart */
+.chart-wrap { position: relative; }
+.chart-wrap canvas { width: 100%; height: 220px; border-radius: var(--radius); display: block; touch-action: none; }
+.chart-tooltip { display: none; position: absolute; z-index: 10; pointer-events: none; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 8px 12px; font-size: 12px; line-height: 1.5; white-space: nowrap; }
+.chart-tooltip .tt-price { font-weight: 600; color: var(--accent); font-size: 14px; }
+.chart-tooltip .tt-buy { font-weight: 600; color: var(--green); font-size: 13px; }
+.chart-tooltip .tt-time { color: var(--text-tertiary); }
+.chart-tooltip .tt-vol { color: var(--green); font-size: 11px; }
+.chart-tooltip .tt-src { color: var(--text-tertiary); font-size: 11px; }
+.chart-controls { display: flex; align-items: center; gap: 8px; }
+.chart-range-btns { display: flex; gap: 4px; }
+.range-btn { padding: 2px 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px; background: var(--bg); color: var(--text-secondary); cursor: pointer; transition: all 0.15s; font-weight: 500; }
+.range-btn:hover { background: var(--bg-hover); }
+.range-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.chart-reset-btn { padding: 2px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 11px; background: var(--bg); color: var(--text-tertiary); cursor: pointer; display: none; }
+.chart-reset-btn:hover { background: var(--bg-hover); color: var(--text); }
+.chart-legend { display: flex; gap: 16px; margin-top: 6px; justify-content: center; }
+.chart-legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-tertiary); }
+.chart-legend-line { width: 16px; height: 2px; border-radius: 1px; }
+.chart-zoom-hint { font-size: 11px; color: var(--text-tertiary); text-align: center; margin-top: 4px; }
+.chart-minimap { width: 100%; height: 24px; border-radius: 3px; background: var(--bg-secondary); margin-top: 6px; position: relative; cursor: pointer; display: none; }
+.chart-minimap-bar { position: absolute; top: 2px; bottom: 2px; background: rgba(35,131,226,0.15); border: 1px solid rgba(35,131,226,0.3); border-radius: 2px; }
+.chart-empty { text-align: center; padding: 30px; color: var(--text-tertiary); font-size: 13px; background: var(--bg-secondary); border-radius: var(--radius); }
+
+/* Tables */
+.listing-table, .tx-table { width: 100%; border-collapse: collapse; }
+.listing-table th, .tx-table th { text-align: left; padding: 6px 8px; font-size: 11px; font-weight: 500; color: var(--text-tertiary); border-bottom: 1px solid var(--border-light); position: static; }
+.listing-table td, .tx-table td { padding: 6px 8px; font-size: 13px; border-bottom: 1px solid var(--border-light); }
+.tx-scroll { max-height: 300px; overflow-y: auto; }
+
+/* Empty */
+.empty { text-align: center; padding: 60px 24px; color: var(--text-tertiary); }
+.empty .icon { font-size: 36px; margin-bottom: 12px; }
+.empty .text { font-size: 14px; }
+
+/* Multi-platform price grid */
+.platform-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+.platform-card { background: var(--bg-secondary); border-radius: var(--radius); padding: 14px; position: relative; transition: border-color 0.15s; border: 2px solid transparent; }
+.platform-card.lowest { border-color: var(--green); }
+.platform-card.lowest::after { content: '最低'; position: absolute; top: 6px; right: 8px; font-size: 10px; font-weight: 600; color: var(--green); background: var(--green-bg); padding: 1px 6px; border-radius: 3px; }
+.platform-card .pf-name { font-size: 12px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 6px; letter-spacing: 0.3px; }
+.platform-card .pf-sell { font-size: 18px; font-weight: 700; color: var(--orange); font-variant-numeric: tabular-nums; }
+.platform-card .pf-sell.no-sell { font-size: 13px; font-weight: 500; color: var(--text-tertiary); }
+.platform-card .pf-buy { font-size: 13px; color: var(--accent); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.platform-card .pf-vol { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+.platform-card .pf-lease { font-size: 11px; color: var(--purple); margin-top: 3px; }
+
+/* Price change pills */
+.change-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.change-pill { display: inline-flex; flex-direction: column; align-items: center; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; min-width: 64px; }
+.change-pill .cp-period { font-size: 10px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 3px; text-transform: uppercase; }
+.change-pill .cp-rate { font-size: 14px; font-weight: 700; }
+.change-pill .cp-amount { font-size: 10px; margin-top: 1px; }
+.change-pill.up { background: var(--green-bg); }
+.change-pill.up .cp-rate, .change-pill.up .cp-amount { color: var(--green); }
+.change-pill.down { background: var(--red-bg); }
+.change-pill.down .cp-rate, .change-pill.down .cp-amount { color: var(--red); }
+.change-pill.flat { background: var(--bg-secondary); }
+.change-pill.flat .cp-rate, .change-pill.flat .cp-amount { color: var(--text-tertiary); }
+
+/* Existence chart */
+.existence-chart-wrap { position: relative; background: var(--bg-secondary); border-radius: var(--radius); padding: 8px; }
+.existence-chart-wrap canvas { width: 100%; height: 140px; display: block; }
+
+/* Container cards */
+.container-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.container-card { background: var(--bg-secondary); border-radius: var(--radius); padding: 12px 14px; }
+.container-card .cc-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.container-card .cc-meta { font-size: 12px; color: var(--text-secondary); display: flex; gap: 12px; flex-wrap: wrap; }
+.container-card .cc-meta span { white-space: nowrap; }
+.container-card .cc-comment { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+
+/* Statistic list */
+.stat-list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
+.stat-list-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border-radius: var(--radius); padding: 8px 12px; }
+.stat-list-item .sli-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.stat-list-item .sli-count { font-size: 14px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 768px) {
+    .toolbar { padding: 12px 16px; }
+    .table-container { padding: 0 16px 16px; }
+    .modal { border-radius: 8px; }
+    .modal-header, .modal-body { padding-left: 16px; padding-right: 16px; }
+    .wear-tabs { padding-left: 16px; padding-right: 16px; }
+    .wear-tabs-border { margin-left: 16px; margin-right: 16px; }
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .price-compare { grid-template-columns: 1fr; }
+    .platform-grid { grid-template-columns: repeat(2, 1fr); }
+    .container-cards { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
 
-<div class="header"><div class="header-inner">
-    <h1><span class="icon">&#9670;</span> CS2 Price Hub</h1>
-    <div><span class="badge" id="statsInfo">加载数据中...</span></div>
-</div></div>
+<div class="header">
+    <div class="header-inner">
+        <h1><span class="icon">&#9670;</span> CS2 Price Hub</h1>
+        <div class="header-right">
+            <span class="badge" id="statsInfo">-</span>
+            <button class="btn" onclick="triggerScrape()">&#8635; 爬取列表</button>
+            <button class="btn" onclick="triggerDetailScrape()">&#9997; 爬取详情</button>
+        </div>
+    </div>
+</div>
 
 <div class="toolbar">
     <div class="search-box">
-        <span class="ico">&#128269;</span>
-        <input type="text" id="searchInput" placeholder="搜索饰品..." oninput="debounceSearch()">
+        <span class="s-icon">&#128269;</span>
+        <input type="text" id="searchInput" placeholder="搜索饰品名称..." oninput="debounceSearch()">
     </div>
-    <select class="sort-select" id="sortSelect" onchange="doSort()">
-        <option value="ask_volume_desc">在售量 高-低</option>
-        <option value="ask_asc">价格 低-高</option>
-        <option value="ask_desc">价格 高-低</option>
-        <option value="ratio_asc">Buff/Steam 低-高</option>
+    <select class="filter-select" id="weaponFilter" onchange="applyFilters()">
+        <option value="">全部类型</option>
     </select>
+    <select class="sort-select" id="sortSelect" onchange="handleSort()">
+        <option value="ask_volume_desc">在售量 高&#8594;低</option>
+        <option value="ask_asc">Buff价 低&#8594;高</option>
+        <option value="ask_desc">Buff价 高&#8594;低</option>
+        <option value="ratio_asc">Buff/Steam 低&#8594;高</option>
+        <option value="vol24_desc">24h成交 高&#8594;低</option>
+        <option value="spread_desc">价差 大&#8594;小</option>
+    </select>
+    <div class="wear-pills" id="wearPills">
+        <span class="wear-pill active" data-wear="all" onclick="setWearFilter('all')">全部</span>
+        <span class="wear-pill" data-wear="fn" onclick="setWearFilter('fn')">崭新</span>
+        <span class="wear-pill" data-wear="mw" onclick="setWearFilter('mw')">略磨</span>
+        <span class="wear-pill" data-wear="ft" onclick="setWearFilter('ft')">久经</span>
+        <span class="wear-pill" data-wear="ww" onclick="setWearFilter('ww')">战痕</span>
+        <span class="wear-pill" data-wear="bs" onclick="setWearFilter('bs')">破损</span>
+        <span class="wear-pill" data-wear="none" onclick="setWearFilter('none')">无磨损</span>
+    </div>
     <span class="item-count" id="itemCount"></span>
 </div>
 
 <div class="table-container">
-    <table><thead><tr>
-        <th style="min-width:220px">饰品</th><th>Buff价</th><th>求购价</th><th>Steam价</th>
-        <th>Buff/Steam</th><th>在售</th><th>求购</th><th>更新</th>
-    </tr></thead><tbody id="tableBody">
-        <tr><td colspan="8"><div class="empty"><div class="icon">&#9697;</div><div>加载中...</div></div></td></tr>
-    </tbody></table>
+    <table>
+        <thead><tr>
+            <th style="min-width:260px">饰品</th>
+            <th>Buff 价</th>
+            <th>求购价</th>
+            <th>Steam 价</th>
+            <th>Buff/Steam</th>
+            <th>价差</th>
+            <th>在售</th>
+            <th>24h成交</th>
+            <th>更新</th>
+        </tr></thead>
+        <tbody id="tableBody">
+            <tr><td colspan="9"><div class="empty"><div class="icon">&#9697;</div><div class="text">加载中...</div></div></td></tr>
+        </tbody>
+    </table>
 </div>
 <div class="pagination" id="pagination"></div>
 
+<!-- Detail Modal -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-        <div class="modal-header"><div id="modalImg"></div><div class="info" id="modalInfo"></div>
-        <button class="modal-close" onclick="closeModal()">&#10005;</button></div>
+        <div class="modal-header">
+            <div id="modalImg"></div>
+            <div class="info" id="modalInfo"></div>
+            <button class="modal-close" onclick="closeModal()">&#10005;</button>
+        </div>
+        <div id="modalWearTabs"></div>
+        <div id="modalWearBorder"></div>
         <div class="modal-body" id="modalBody"></div>
     </div>
 </div>
 
 <script>
-const DATA_URL = 'https://raw.githubusercontent.com/treasurebamboos-wq/cs2-price-hub/master/data/prices_lite.json';
+const API = '';
 const PAGE_SIZE = 50;
-let currentPage = 1, allItems = [], filtered = [], rawData = null, searchTimer = null;
+let currentPage = 1;
+let allData = [];
+let filteredData = [];
+let searchTimer = null;
+let currentWear = 'all';
+let currentWeapon = '';
 
-// Normalize old/new field names
-function norm(b) {
-    return {
-        ask: b.ask ?? b.price ?? null,
-        ask_volume: b.ask_volume ?? b.volume ?? b.sell_num ?? 0,
-        bid: b.bid ?? b.buy_price ?? null,
-        bid_volume: b.bid_volume ?? b.buy_num ?? 0,
-        steam_price_cny: b.steam_price_cny ?? b.steam_price ?? null,
-        quick_price: b.quick_price ?? null,
-        updated_at: b.updated_at ?? null,
-    };
+const WEAR_MAP = {
+    'Factory New':    { short: '崭新', code: 'fn', cn: '崭新出厂' },
+    'Minimal Wear':   { short: '略磨', code: 'mw', cn: '略有磨损' },
+    'Field-Tested':   { short: '久经', code: 'ft', cn: '久经沙场' },
+    'Well-Worn':      { short: '战痕', code: 'ww', cn: '战痕累累' },
+    'Battle-Scarred': { short: '破损', code: 'bs', cn: '破损不堪' },
+};
+const WEAR_ORDER = ['Factory New','Minimal Wear','Field-Tested','Well-Worn','Battle-Scarred'];
+
+function getWear(name) {
+    const m = name && name.match(/\((Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\)/);
+    return m ? WEAR_MAP[m[1]] : null;
+}
+function getWearEn(name) {
+    const m = name && name.match(/\((Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\)/);
+    return m ? m[1] : null;
+}
+function getBaseName(name) {
+    return (name || '').replace(/\s*\((Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\)\s*$/, '').trim();
+}
+function getWeaponType(name) {
+    const m = (name || '').match(/^(\u2605\s*)?([^|]+)/);
+    return m ? m[2].trim() : '';
 }
 
+// ===== Data =====
 async function loadData() {
     try {
-        const res = await fetch(DATA_URL + '?t=' + Date.now());
-        rawData = await res.json();
-        allItems = Object.values(rawData.items || {});
-        const meta = rawData.meta || {};
-        const time = meta.lastUpdate ? new Date(meta.lastUpdate).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
-        document.getElementById('statsInfo').innerHTML = `<b>${allItems.length}</b> 饰品 &middot; ${time}`;
-        filtered = [...allItems];
-        doSort();
-    } catch(e) { console.error(e); }
+        const res = await fetch(`${API}/api/prices/latest?limit=1000`);
+        const json = await res.json();
+        if (json.success) { allData = json.data; buildWeaponFilter(); applyFilters(); loadStats(); }
+    } catch(e) { console.error('Load failed:', e); }
+}
+async function loadStats() {
+    try {
+        const res = await fetch(`${API}/api/stats`);
+        const json = await res.json();
+        if (json.success) {
+            const s = json.data;
+            const time = s.lastUpdate ? new Date(s.lastUpdate).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}) : '-';
+            document.getElementById('statsInfo').innerHTML = `<b>${s.totalItems}</b> 饰品 &middot; <b>${s.totalTransactions}</b> 成交 &middot; ${time}`;
+        }
+    } catch(e) {}
+}
+function buildWeaponFilter() {
+    const types = new Map();
+    allData.forEach(item => { const t = getWeaponType(item.market_hash_name); if (t) types.set(t, (types.get(t)||0)+1); });
+    const sorted = [...types.entries()].sort((a,b) => b[1]-a[1]);
+    document.getElementById('weaponFilter').innerHTML = '<option value="">全部类型 ('+allData.length+')</option>' + sorted.map(([t,c]) => `<option value="${esc(t)}">${esc(t)} (${c})</option>`).join('');
 }
 
+// ===== Filters =====
+function setWearFilter(w) {
+    currentWear = w;
+    document.querySelectorAll('.wear-pill').forEach(p => p.classList.toggle('active', p.dataset.wear === w));
+    applyFilters();
+}
+function applyFilters() {
+    currentWeapon = document.getElementById('weaponFilter').value;
+    filteredData = allData.filter(item => {
+        if (currentWear !== 'all') {
+            const w = getWear(item.market_hash_name);
+            if (currentWear === 'none') { if (w) return false; }
+            else { if (!w || w.code !== currentWear) return false; }
+        }
+        if (currentWeapon && getWeaponType(item.market_hash_name) !== currentWeapon) return false;
+        return true;
+    });
+    currentPage = 1;
+    handleSort();
+}
+
+// ===== Search =====
 function debounceSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(doSearch, 300); }
-function doSearch() {
-    const q = document.getElementById('searchInput').value.trim().toLowerCase();
-    filtered = q ? allItems.filter(i => (i.name||'').toLowerCase().includes(q) || (i.market_hash_name||'').toLowerCase().includes(q) || (i.short_name||'').toLowerCase().includes(q)) : [...allItems];
-    currentPage = 1; doSort();
+async function doSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) { loadData(); return; }
+    try {
+        const res = await fetch(`${API}/api/search?q=${encodeURIComponent(q)}`);
+        const json = await res.json();
+        if (json.success) { allData = json.data; filteredData = allData; currentPage = 1; handleSort(); }
+    } catch(e) {}
 }
 
-function doSort() {
+// ===== Sort =====
+function handleSort() {
     const mode = document.getElementById('sortSelect').value;
-    filtered.sort((a, b) => {
-        const ba = norm(a.prices?.buff||{}), bb = norm(b.prices?.buff||{});
+    const sorted = [...filteredData];
+    sorted.sort((a, b) => {
+        const ba = a.prices?.buff || {}, bb = b.prices?.buff || {};
         switch(mode) {
-            case 'ask_asc': return (ba.ask||Infinity)-(bb.ask||Infinity);
-            case 'ask_desc': return (bb.ask||0)-(ba.ask||0);
-            case 'ask_volume_desc': return (bb.ask_volume||0)-(ba.ask_volume||0);
-            case 'ratio_asc': {
-                const ra = ba.ask && ba.steam_price_cny ? ba.ask/ba.steam_price_cny : Infinity;
-                const rb = bb.ask && bb.steam_price_cny ? bb.ask/bb.steam_price_cny : Infinity;
-                return ra - rb;
-            }
+            case 'ask_asc': return (ba.ask||Infinity) - (bb.ask||Infinity);
+            case 'ask_desc': return (bb.ask||0) - (ba.ask||0);
+            case 'ask_volume_desc': return (bb.ask_volume||0) - (ba.ask_volume||0);
+            case 'ratio_asc': { const ra = ba.ask && ba.steam_price_cny ? ba.ask/ba.steam_price_cny : Infinity; const rb = bb.ask && bb.steam_price_cny ? bb.ask/bb.steam_price_cny : Infinity; return ra - rb; }
+            case 'vol24_desc': return (b.volume_24h||0) - (a.volume_24h||0);
+            case 'spread_desc': return ((bb.ask&&bb.bid?bb.ask-bb.bid:0)) - ((ba.ask&&ba.bid?ba.ask-ba.bid:0));
             default: return 0;
         }
     });
+    filteredData = sorted;
     renderTable();
 }
 
+function countVariants(name) {
+    const base = getBaseName(name);
+    return allData.filter(i => getBaseName(i.market_hash_name) === base).length;
+}
+
+// ===== Render Table =====
 function renderTable() {
     const tbody = document.getElementById('tableBody');
-    const start = (currentPage-1)*PAGE_SIZE;
-    const page = filtered.slice(start, start+PAGE_SIZE);
-    document.getElementById('itemCount').textContent = `${filtered.length} 件`;
-    if (!page.length) { tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="icon">&#128270;</div><div>没有匹配的饰品</div></div></td></tr>'; return; }
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageData = filteredData.slice(start, start + PAGE_SIZE);
+    document.getElementById('itemCount').textContent = `${filteredData.length} 件`;
 
-    tbody.innerHTML = page.map(item => {
-        const b = norm(item.prices?.buff||{});
-        const ask = b.ask!=null ? `&yen;${fmtN(b.ask)}` : '-';
-        const bid = b.bid!=null ? `&yen;${fmtN(b.bid)}` : '-';
-        const steam = b.steam_price_cny!=null ? `&yen;${fmtN(b.steam_price_cny)}` : '-';
-        const ratio = (b.ask && b.steam_price_cny && b.steam_price_cny>0) ? (b.ask/b.steam_price_cny*100).toFixed(1)+'%' : '-';
-        const rc = ratio!=='-' ? (parseFloat(ratio)<70?'tag-green':parseFloat(ratio)<85?'tag-orange':'tag-muted') : '';
+    if (pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9"><div class="empty"><div class="icon">&#128270;</div><div class="text">没有找到匹配的饰品</div></div></td></tr>';
+        return;
+    }
+    tbody.innerHTML = pageData.map(item => {
+        const b = item.prices?.buff || {};
+        const vol24 = item.volume_24h || 0;
+        const ask = b.ask != null ? `&yen;${fmtN(b.ask)}` : '-';
+        const bid = b.bid != null ? `&yen;${fmtN(b.bid)}` : '-';
+        const steamCny = b.steam_price_cny != null ? `&yen;${fmtN(b.steam_price_cny)}` : '-';
+        const ratio = (b.ask && b.steam_price_cny && b.steam_price_cny > 0) ? (b.ask / b.steam_price_cny * 100).toFixed(1) + '%' : '-';
+        const ratioClass = ratio !== '-' ? (parseFloat(ratio) < 70 ? 'tag-green' : parseFloat(ratio) < 85 ? 'tag-orange' : 'tag-muted') : '';
         const updated = b.updated_at ? timeAgo(b.updated_at) : '-';
-        const img = item.icon_url;
+        const wear = getWear(item.market_hash_name);
+        const wearBadge = wear ? `<span class="wear-badge wear-${wear.code}">${wear.short}</span>` : '';
+        const spread = (b.ask && b.bid) ? b.ask - b.bid : null;
+        const spreadPct = (b.ask && b.bid && b.ask > 0) ? ((spread / b.ask) * 100).toFixed(1) : null;
+        const spreadHtml = spread != null ? `<span class="cell-tag ${spreadPct > 5 ? 'tag-green' : 'tag-muted'}">&yen;${fmtN(spread)}<span style="font-size:10px;margin-left:2px">${spreadPct}%</span></span>` : '<span class="cell-muted">-</span>';
+        const varCount = countVariants(item.market_hash_name);
+        const varBadge = varCount > 1 ? `<span class="variant-badge">${varCount}磨损</span>` : '';
+        const hasCsqaq = item.csqaqHistory?.sell?.length > 0;
+        const csqaqDot = hasCsqaq ? '<span class="src-dot src-csqaq" title="有CSQAQ历史数据"></span>' : '';
+
         return `<tr onclick="showDetail('${esc(item.market_hash_name)}')">
             <td><div class="cell-name">
-                ${img?`<img src="${esc(img)}" loading="lazy" alt="">`:`<div class="no-img">&#9670;</div>`}
-                <div class="text"><div class="cn">${esc(item.name||'')}</div><div class="en">${esc(item.short_name||item.market_hash_name||'')}</div></div>
+                ${item.icon_url ? `<img src="${esc(item.icon_url)}" loading="lazy" alt="">` : `<div class="no-img">&#9670;</div>`}
+                <div class="text"><div class="cn">${esc(item.name||'')}</div><div class="en">${esc(item.short_name || item.market_hash_name||'')}</div><div class="meta">${wearBadge}${varBadge}${csqaqDot}</div></div>
             </div></td>
-            <td class="cell-price ask">${ask}</td><td class="cell-price bid">${bid}</td><td class="cell-price steam">${steam}</td>
-            <td>${ratio!=='-'?`<span class="cell-tag ${rc}">${ratio}</span>`:'<span class="cell-muted">-</span>'}</td>
-            <td>${b.ask_volume||0}</td><td>${b.bid_volume||0}</td><td class="cell-time">${updated}</td>
+            <td class="cell-price ask">${ask}</td>
+            <td class="cell-price bid">${bid}</td>
+            <td class="cell-price steam">${steamCny}</td>
+            <td>${ratio !== '-' ? `<span class="cell-tag ${ratioClass}">${ratio}</span>` : '<span class="cell-muted">-</span>'}</td>
+            <td>${spreadHtml}</td>
+            <td>${b.ask_volume || 0}</td>
+            <td>${vol24 > 0 ? `<span class="cell-tag tag-green">${vol24}</span>` : '<span class="cell-muted">0</span>'}</td>
+            <td class="cell-time">${updated}</td>
         </tr>`;
     }).join('');
     renderPagination();
 }
 
+// ===== Pagination =====
 function renderPagination() {
-    const total = Math.ceil(filtered.length/PAGE_SIZE); const el = document.getElementById('pagination');
-    if (total<=1) { el.innerHTML=''; return; }
-    let h=''; for (let i=1;i<=total;i++) { if (i===1||i===total||(i>=currentPage-2&&i<=currentPage+2)) h+=`<button class="${i===currentPage?'active':''}" onclick="gotoPage(${i})">${i}</button>`; else if (i===currentPage-3||i===currentPage+3) h+=`<button disabled>&hellip;</button>`; }
-    el.innerHTML=h;
+    const total = Math.ceil(filteredData.length / PAGE_SIZE);
+    const el = document.getElementById('pagination');
+    if (total <= 1) { el.innerHTML = ''; return; }
+    let html = '';
+    for (let i = 1; i <= total; i++) {
+        if (i === 1 || i === total || (i >= currentPage-3 && i <= currentPage+3)) html += `<button class="${i===currentPage?'active':''}" onclick="gotoPage(${i})">${i}</button>`;
+        else if (i === currentPage-4 || i === currentPage+4) html += `<button disabled>&hellip;</button>`;
+    }
+    el.innerHTML = html;
 }
-function gotoPage(p){currentPage=p;renderTable();window.scrollTo({top:0,behavior:'smooth'})}
+function gotoPage(p) { currentPage = p; renderTable(); window.scrollTo({top:0,behavior:'smooth'}); }
 
-function showDetail(name) {
-    const item = allItems.find(i => i.market_hash_name === name);
-    if (!item) return;
-    document.getElementById('modal').classList.add('active');
-    const b = norm(item.prices?.buff||{});
-    const d = item.detail||{};
-    const so = item.sell_order_summary||{};
-    document.getElementById('modalImg').innerHTML = item.icon_url?`<img src="${esc(item.icon_url)}" alt="">`:`<div class="no-img">&#9670;</div>`;
-    document.getElementById('modalInfo').innerHTML = `<h2>${esc(item.name||'')}</h2><div class="sub">${esc(item.market_hash_name||'')}</div>`;
+// ===== Detail Modal =====
+async function showDetail(name) {
+    const modal = document.getElementById('modal');
+    modal.classList.add('active');
+    document.getElementById('modalInfo').innerHTML = '<span style="color:var(--text-tertiary)">加载中...</span>';
+    document.getElementById('modalImg').innerHTML = '';
+    document.getElementById('modalBody').innerHTML = '';
+    document.getElementById('modalWearTabs').innerHTML = '';
+    document.getElementById('modalWearBorder').innerHTML = '';
 
-    const ratio = (b.ask && b.steam_price_cny && b.steam_price_cny>0) ? (b.ask/b.steam_price_cny*100).toFixed(1)+'%' : '-';
-    const rc = ratio!=='-'?(parseFloat(ratio)<70?'c-green':parseFloat(ratio)<85?'c-ask':''):'';
+    try {
+        const [itemRes, histRes, varRes] = await Promise.all([
+            fetch(`${API}/api/item/${encodeURIComponent(name)}`).then(r=>r.json()),
+            fetch(`${API}/api/history/item/${encodeURIComponent(name)}`).then(r=>r.json()),
+            fetch(`${API}/api/variants/${encodeURIComponent(name)}`).then(r=>r.json()),
+        ]);
+        if (!itemRes.success) { document.getElementById('modalInfo').textContent = '加载失败'; return; }
 
-    let html = `<div class="section"><div class="section-title">价格信息</div><div class="metric-grid">
-        <div class="metric"><div class="label">Buff 最低价</div><div class="val c-ask">&yen;${fmtN(b.ask)}</div></div>
-        <div class="metric"><div class="label">最高求购</div><div class="val c-bid">&yen;${fmtN(b.bid)}</div></div>
-        <div class="metric"><div class="label">Steam 价格</div><div class="val">&yen;${fmtN(b.steam_price_cny)}</div></div>
-        <div class="metric"><div class="label">快速出售价</div><div class="val">&yen;${fmtN(b.quick_price)}</div></div>
-        <div class="metric"><div class="label">Buff/Steam</div><div class="val ${rc}">${ratio}</div></div>
-        <div class="metric"><div class="label">在售/求购</div><div class="val">${b.ask_volume||0} / ${b.bid_volume||0}</div></div>
-    </div></div>`;
+        const item = itemRes.data;
+        if (histRes.success) {
+            item.priceHistory = histRes.data.priceHistory || [];
+            item.transactions = histRes.data.transactions || [];
+            item.buffPriceHistory = histRes.data.buffPriceHistory || [];
+            item.csqaqHistory = histRes.data.csqaqHistory || null;
+        }
+        const variants = varRes.success ? varRes.data : [];
+        renderModal(item, variants);
+    } catch(e) {
+        document.getElementById('modalInfo').textContent = '网络错误';
+        console.error(e);
+    }
+}
 
+function renderModal(item, variants) {
+    const b = item.prices?.buff || {};
+    const d = item.detail || {};
+    const so = item.sell_order_summary || {};
+    const wear = getWear(item.market_hash_name);
+
+    // === Header image ===
+    document.getElementById('modalImg').innerHTML = item.icon_url
+        ? `<img src="${esc(item.icon_url)}" alt="">`
+        : `<div class="no-img">&#9670;</div>`;
+
+    // === Header info ===
+    const steamUrl = d.steam_market_url || item.steam_market_url;
+    let sub = `<span>${esc(item.market_hash_name||'')}</span>`;
+    if (wear) sub += `<span class="wear-badge wear-${wear.code}">${wear.cn}</span>`;
+    if (steamUrl) sub += `<a href="${esc(steamUrl)}" target="_blank">Steam &#8599;</a>`;
+    if (item.goods_id) sub += `<a href="https://buff.163.com/goods/${item.goods_id}" target="_blank">Buff &#8599;</a>`;
+    document.getElementById('modalInfo').innerHTML = `<h2>${esc(item.name||'')}</h2><div class="sub">${sub}</div>`;
+
+    // === Wear tabs (only if this skin HAS wear variants) ===
+    const hasWear = !!getWearEn(item.market_hash_name);
+    const wearVariants = hasWear ? variants.filter(v => getWearEn(v.market_hash_name)) : [];
+
+    if (wearVariants.length > 1) {
+        wearVariants.sort((a, b) => WEAR_ORDER.indexOf(getWearEn(a.market_hash_name)) - WEAR_ORDER.indexOf(getWearEn(b.market_hash_name)));
+        let tabsHtml = '<div class="wear-tabs">';
+        for (const v of wearVariants) {
+            const vw = getWear(v.market_hash_name);
+            const isCurrent = v.market_hash_name === item.market_hash_name;
+            const vPrice = v.prices?.buff?.ask;
+            const priceStr = vPrice != null ? `&yen;${fmtN(vPrice)}` : '';
+            tabsHtml += `<button class="wear-tab ${isCurrent?'active':''}" onclick="showDetail('${esc(v.market_hash_name)}')">${vw.cn}<span class="tab-price">${priceStr}</span></button>`;
+        }
+        tabsHtml += '</div>';
+        document.getElementById('modalWearTabs').innerHTML = tabsHtml;
+        document.getElementById('modalWearBorder').innerHTML = '<div class="wear-tabs-border"></div>';
+    } else {
+        document.getElementById('modalWearTabs').innerHTML = '';
+        document.getElementById('modalWearBorder').innerHTML = '';
+    }
+
+    let html = '';
+    const cq = item.csqaq || null;
+    const cqd = cq?.detail || cq?.rank || null;
+
+    // === Section 1: Multi-platform Price Comparison ===
+    html += `<div class="section"><div class="section-title">多平台价格对比</div>`;
+
+    // Build platform list from CSQAQ detail + fallback to Buff API data
+    const platforms = [];
+    function addPlatform(name, icon, sell, buy, sellNum, buyNum, leaseShort, leaseLong) {
+        if ((sell && sell > 0) || (buy && buy > 0)) {
+            platforms.push({ name, icon, sell: sell||0, buy: buy||0, sellNum: sellNum||0, buyNum: buyNum||0, leaseShort: leaseShort||0, leaseLong: leaseLong||0 });
+        }
+    }
+
+    if (cqd) {
+        addPlatform('BUFF', '\u25C6', cqd.buff_sell_price, cqd.buff_buy_price, cqd.buff_sell_num, cqd.buff_buy_num);
+        addPlatform('\u60A0\u60A0', '\u25C7', cqd.yyyp_sell_price, cqd.yyyp_buy_price, cqd.yyyp_sell_num, cqd.yyyp_buy_num, cqd.yyyp_lease_price, cqd.yyyp_long_lease_price);
+        addPlatform('Steam', '\u25CF', cqd.steam_sell_price, cqd.steam_buy_price, cqd.steam_sell_num, cqd.steam_buy_num);
+        addPlatform('C5', '\u25B8', cqd.c5_sell_price, cqd.c5_buy_price, cqd.c5_sell_num, cqd.c5_buy_num, cqd.c5_lease_price, cqd.c5_long_lease_price);
+        addPlatform('IGXE', '\u25B9', cqd.igxe_sell_price, cqd.igxe_buy_price, cqd.igxe_sell_num, cqd.igxe_buy_num, cqd.igxe_lease_price, cqd.igxe_long_lease_price);
+        addPlatform('ECO', '\u25AA', cqd.eco_sell_price, cqd.eco_buy_price, cqd.eco_sell_num, cqd.eco_buy_num);
+        if (cqd.r8_sell_price > 0) addPlatform('Roll8', '\u25AB', cqd.r8_sell_price, 0, cqd.r8_sell_num, 0);
+    } else {
+        // Fallback: only Buff + Steam from original data
+        addPlatform('BUFF', '\u25C6', b.ask, b.bid, b.ask_volume, b.bid_volume);
+        addPlatform('Steam', '\u25CF', b.steam_price_cny, 0, 0, 0);
+    }
+
+    // Find lowest sell price (>0) to mark
+    let lowestSell = Infinity, lowestIdx = -1;
+    platforms.forEach((pf, i) => { if (pf.sell > 0 && pf.sell < lowestSell) { lowestSell = pf.sell; lowestIdx = i; } });
+
+    html += `<div class="platform-grid">`;
+    platforms.forEach((pf, i) => {
+        const isLowest = i === lowestIdx && platforms.filter(p => p.sell > 0).length > 1;
+        html += `<div class="platform-card${isLowest ? ' lowest' : ''}">`;
+        html += `<div class="pf-name">${esc(pf.icon)} ${esc(pf.name)}</div>`;
+        if (pf.sell > 0) {
+            html += `<div class="pf-sell">&yen;${fmtN(pf.sell)}</div>`;
+        } else {
+            html += `<div class="pf-sell no-sell">\u65E0\u5728\u552E</div>`;
+        }
+        if (pf.buy > 0) {
+            html += `<div class="pf-buy">\u6C42\u8D2D &yen;${fmtN(pf.buy)}</div>`;
+        }
+        const volParts = [];
+        if (pf.sellNum > 0) volParts.push(`\u5728\u552E ${pf.sellNum}`);
+        if (pf.buyNum > 0) volParts.push(`\u6C42\u8D2D ${pf.buyNum}`);
+        if (volParts.length > 0) html += `<div class="pf-vol">${volParts.join(' / ')}</div>`;
+        if (pf.leaseShort > 0 || pf.leaseLong > 0) {
+            const lParts = [];
+            if (pf.leaseShort > 0) lParts.push(`\u77ED\u79DF ${fmtN(pf.leaseShort)}/\u5929`);
+            if (pf.leaseLong > 0) lParts.push(`\u957F\u79DF ${fmtN(pf.leaseLong)}/\u5929`);
+            html += `<div class="pf-lease">${lParts.join(' | ')}</div>`;
+        }
+        html += `</div>`;
+    });
+    html += `</div>`;
+
+    // Extra price metrics (keep original)
+    const extras = [];
+    if (b.quick_price) extras.push(['\u5FEB\u901F\u51FA\u552E\u4EF7', `&yen;${fmtN(b.quick_price)}`]);
+    if (d.sell_reference_price) extras.push(['\u53C2\u8003\u552E\u4EF7', `&yen;${fmtN(d.sell_reference_price)}`]);
+    if (b.steam_price_usd) extras.push(['Steam (USD)', `$${fmtN(b.steam_price_usd)}`]);
+    if (cqd && cqd.yyyp_transfer_price > 0) extras.push(['\u60A0\u60A0\u8F6C\u8BA9\u4EF7', `&yen;${fmtN(cqd.yyyp_transfer_price)}`]);
+    if (extras.length > 0) {
+        html += `<div class="metric-grid" style="margin-top:8px">`;
+        extras.forEach(([l,v]) => html += `<div class="metric"><div class="label">${l}</div><div class="val">${v}</div></div>`);
+        html += `</div>`;
+    }
+    html += `</div>`;
+
+    // === Section 2: Price Change Pills ===
+    if (cqd) {
+        const periods = [
+            { label: '1\u65E5', rate: cqd.sell_price_rate_1, amount: cqd.sell_price_1 },
+            { label: '7\u65E5', rate: cqd.sell_price_rate_7, amount: cqd.sell_price_7 },
+            { label: '30\u65E5', rate: cqd.sell_price_rate_30, amount: cqd.sell_price_30 },
+            { label: '90\u65E5', rate: cqd.sell_price_rate_90, amount: cqd.sell_price_90 },
+            { label: '180\u65E5', rate: cqd.sell_price_rate_180, amount: cqd.sell_price_180 },
+            { label: '365\u65E5', rate: cqd.sell_price_rate_365, amount: cqd.sell_price_365 },
+        ];
+        const activePeriods = periods.filter(p => (p.rate != null && p.rate !== 0) || (p.amount != null && p.amount !== 0));
+        if (activePeriods.length > 0) {
+            html += `<div class="section"><div class="section-title">Buff \u6DA8\u8DCC\u5E45</div><div class="change-pills">`;
+            for (const p of activePeriods) {
+                const rate = p.rate || 0;
+                const amount = p.amount || 0;
+                const cls = rate > 0 ? 'up' : rate < 0 ? 'down' : 'flat';
+                const sign = rate > 0 ? '+' : '';
+                const amtSign = amount > 0 ? '+' : '';
+                html += `<div class="change-pill ${cls}">`;
+                html += `<span class="cp-period">${p.label}</span>`;
+                html += `<span class="cp-rate">${sign}${rate.toFixed(2)}%</span>`;
+                if (amount !== 0) html += `<span class="cp-amount">${amtSign}&yen;${fmtN(amount)}</span>`;
+                html += `</div>`;
+            }
+            html += `</div></div>`;
+        }
+    }
+
+    // === Section 3: Market Data Metrics ===
+    html += `<div class="section"><div class="section-title">\u4EA4\u6613 / \u5E02\u573A\u6570\u636E</div><div class="metric-grid">`;
+    // Existence
+    if (cqd && cqd.statistic) {
+        html += `<div class="metric"><div class="label">\u5B58\u4E16\u91CF</div><div class="val">${Number(cqd.statistic).toLocaleString()}</div></div>`;
+    }
+    // Rank
+    if (cqd && cqd.rank_num) {
+        let rankChange = '';
+        if (cqd.rank_num_change != null && cqd.rank_num_change !== 0) {
+            const arrow = cqd.rank_num_change > 0 ? '\u2191' : '\u2193';
+            const rkColor = cqd.rank_num_change > 0 ? 'var(--green)' : 'var(--red)';
+            rankChange = ` <span style="font-size:12px;color:${rkColor}">${arrow}${Math.abs(cqd.rank_num_change)}</span>`;
+        }
+        html += `<div class="metric"><div class="label">\u70ED\u5EA6\u6392\u540D</div><div class="val">#${cqd.rank_num}${rankChange}</div></div>`;
+    }
+    // Buff/Steam conversion
+    if (cqd && cqd.buff_steam_buy_conversion > 0) {
+        const convPct = (cqd.buff_steam_buy_conversion * 100).toFixed(1);
+        const convClass = parseFloat(convPct) < 75 ? 'c-green' : '';
+        html += `<div class="metric"><div class="label">\u6302\u5200\u6BD4 Buff/Steam</div><div class="val ${convClass}">${convPct}%</div></div>`;
+    } else if (b.ask && b.steam_price_cny && b.steam_price_cny > 0) {
+        const r = (b.ask / b.steam_price_cny * 100).toFixed(1);
+        html += `<div class="metric"><div class="label">\u6302\u5200\u6BD4 Buff/Steam</div><div class="val">${r}%</div></div>`;
+    }
+    // Steam turnover
+    if (cqd && cqd.turnover_number > 0) {
+        html += `<div class="metric"><div class="label">Steam \u65E5\u6210\u4EA4</div><div class="val c-green">${cqd.turnover_number}</div></div>`;
+    }
+    if (cqd && cqd.turnover_avg_price > 0) {
+        html += `<div class="metric"><div class="label">Steam \u5747\u4EF7 (USD)</div><div class="val">$${fmtN(cqd.turnover_avg_price)}</div></div>`;
+    }
+    // Original volume data
+    html += `<div class="metric"><div class="label">Buff \u5728\u552E</div><div class="val">${b.ask_volume||0}</div></div>`;
+    html += `<div class="metric"><div class="label">Buff \u6C42\u8D2D</div><div class="val">${b.bid_volume||0}</div></div>`;
+    html += `<div class="metric"><div class="label">24h \u6210\u4EA4</div><div class="val c-green">${item.volume_24h||0}</div></div>`;
+    // Lease info
+    if (cqd && cqd.yyyp_lease_price > 0) {
+        html += `<div class="metric"><div class="label">\u60A0\u60A0\u77ED\u79DF / \u5E74\u5316</div><div class="val" style="font-size:14px">${fmtN(cqd.yyyp_lease_price)}/\u5929 <span style="font-size:11px;color:var(--text-tertiary)">${cqd.yyyp_lease_annual ? cqd.yyyp_lease_annual + '%' : ''}</span></div></div>`;
+    }
+    if (cqd && cqd.yyyp_long_lease_price > 0) {
+        html += `<div class="metric"><div class="label">\u60A0\u60A0\u957F\u79DF / \u5E74\u5316</div><div class="val" style="font-size:14px">${fmtN(cqd.yyyp_long_lease_price)}/\u5929 <span style="font-size:11px;color:var(--text-tertiary)">${cqd.yyyp_long_lease_annual ? cqd.yyyp_long_lease_annual + '%' : ''}</span></div></div>`;
+    }
+    // Float range
+    if (cqd && cqd.min_float != null && cqd.max_float != null) {
+        html += `<div class="metric"><div class="label">\u78E8\u635F\u8303\u56F4</div><div class="val" style="font-size:13px">${cqd.min_float} ~ ${cqd.max_float}</div></div>`;
+    }
+    html += `</div></div>`;
+
+    // === Price Chart ===
+    const history = item.priceHistory || [];
+    const csqaqSell = item.csqaqHistory?.sell || [];
+    const csqaqBuy = item.csqaqHistory?.buy || [];
+    const buffHistory = item.buffPriceHistory || [];
+
+    // Merge sell data - use timestamp-based dedup (10min window) instead of daily
+    const allSellData = [];
+    const usedTs = [];
+    function addSell(t, p, v, src) {
+        if (p == null || isNaN(p) || p <= 0) return;
+        const dominated = usedTs.some(u => Math.abs(u.t - t) < 600000 && u.src === src);
+        if (!dominated) { allSellData.push({t, p, v, src}); usedTs.push({t, src}); }
+    }
+
+    // Source 1: priceHistory (Buff爬虫快照)
+    for (const h of history) addSell(h.t, h.p, h.v, h.src || 'buff');
+    // Source 2: csqaqHistory (CSQAQ Chart API历史曲线)
+    for (const h of csqaqSell) { if (h.date && h.price != null) addSell(new Date(h.date).getTime(), h.price, null, 'csqaq'); }
+    // Source 3: buffPriceHistory (Buff官方历史)
+    for (const h of buffHistory) { if (h[0] && h[1] != null) addSell(h[0]*1000, h[1], null, 'buff-hist'); }
+
+    // Source 4: 从CSQAQ涨跌数据倒推历史价格（当前价 - 变动金额 = N天前的价格）
+    if (cqd) {
+        const curPrice = cqd.buff_sell_price || 0;
+        if (curPrice > 0) {
+            const now = Date.now();
+            addSell(now, curPrice, null, 'csqaq-cur');
+            const changePoints = [
+                { days: 1, amt: cqd.sell_price_1 },
+                { days: 7, amt: cqd.sell_price_7 },
+                { days: 15, amt: cqd.sell_price_15 },
+                { days: 30, amt: cqd.sell_price_30 },
+                { days: 90, amt: cqd.sell_price_90 },
+                { days: 180, amt: cqd.sell_price_180 },
+                { days: 365, amt: cqd.sell_price_365 },
+            ];
+            for (const cp of changePoints) {
+                if (cp.amt != null && cp.amt !== 0) {
+                    const histPrice = curPrice - cp.amt;
+                    if (histPrice > 0) {
+                        addSell(now - cp.days * 86400000, histPrice, null, 'csqaq-calc');
+                    }
+                }
+            }
+        }
+    }
+
+    allSellData.sort((a,b) => a.t - b.t);
+
+    // De-dup cross-source on same day (keep first per day after sorting by time)
+    // 优先级: csqaq > csqaq-calc > buff > buff-hist > csqaq-cur
+    const srcPriority = {'csqaq':0, 'buff':1, 'buff-hist':2, 'csqaq-calc':3, 'csqaq-cur':4};
+    allSellData.sort((a,b) => a.t - b.t || (srcPriority[a.src]||9) - (srcPriority[b.src]||9));
+    const dedupSell = [];
+    const seenDates = new Set();
+    for (const d2 of allSellData) {
+        const dk = new Date(d2.t).toISOString().slice(0,10) + '_' + d2.src;
+        if (!seenDates.has(dk)) { dedupSell.push(d2); seenDates.add(dk); }
+    }
+    // 同一天跨来源只保留优先级最高的
+    const finalSell = [];
+    const finalDates = new Set();
+    for (const d2 of dedupSell) {
+        const dk = new Date(d2.t).toISOString().slice(0,10);
+        if (!finalDates.has(dk)) { finalSell.push(d2); finalDates.add(dk); }
+    }
+
+    // Buy data
+    const allBuyData = csqaqBuy.filter(h => h.date && h.price != null).map(h => ({t: new Date(h.date).getTime(), p: h.price}));
+    allBuyData.sort((a,b) => a.t - b.t);
+
+    // Always show chart section - show "no data" if empty
+    const dataInfo = [];
+    if (finalSell.some(d2=>d2.src==='csqaq'||d2.src==='csqaq-calc'||d2.src==='csqaq-cur')) dataInfo.push('CSQAQ');
+    if (finalSell.some(d2=>d2.src==='buff'||d2.src==='buff-hist')) dataInfo.push('Buff');
+    const sourceLabel = dataInfo.length > 0 ? ` (${dataInfo.join(' + ')})` : '';
+
+    html += `<div class="section">
+        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between">
+            <span>价格走势${sourceLabel}</span>
+            ${finalSell.length > 1 ? `<div class="chart-controls">
+                <button class="chart-reset-btn" id="chartResetBtn" onclick="chartResetView()">重置</button>
+                <div class="chart-range-btns" id="priceRangeBtns">
+                    <button class="range-btn" data-range="7">1W</button>
+                    <button class="range-btn" data-range="30">1M</button>
+                    <button class="range-btn" data-range="90">3M</button>
+                    <button class="range-btn" data-range="365">1Y</button>
+                    <button class="range-btn active" data-range="0">全部</button>
+                </div>
+            </div>` : ''}
+        </div>`;
+
+    if (finalSell.length > 1) {
+        html += `<div class="chart-wrap"><canvas id="priceChart"></canvas><div class="chart-tooltip" id="priceChartTip"></div></div>`;
+        html += `<div class="chart-minimap" id="chartMinimap"><div class="chart-minimap-bar" id="chartMinimapBar"></div></div>`;
+        if (allBuyData.length > 1) {
+            html += `<div class="chart-legend">
+                <span class="chart-legend-item"><span class="chart-legend-line" style="background:#2383e2"></span>卖价</span>
+                <span class="chart-legend-item"><span class="chart-legend-line" style="background:#448361"></span>求购价</span>
+            </div>`;
+        }
+        html += `<div class="chart-zoom-hint">滚轮缩放 | 拖拽平移 | 双击重置</div>`;
+    } else if (finalSell.length === 1) {
+        html += `<div class="chart-empty">当前价格: <b style="color:var(--orange)">&yen;${fmtN(finalSell[0].p)}</b><br><span style="font-size:12px">数据不足以绘制趋势图，随着持续爬取会逐渐丰富</span></div>`;
+    } else {
+        html += `<div class="chart-empty">暂无价格历史数据</div>`;
+    }
+    html += `</div>`;
+
+    // === Section 5: Existence Chart ===
+    const existenceData = cq?.existence;
+    if (existenceData && existenceData.length > 1) {
+        html += `<div class="section"><div class="section-title">\u5B58\u4E16\u91CF\u8D70\u52BF (${existenceData.length}\u5929)</div>`;
+        html += `<div class="existence-chart-wrap"><canvas id="existenceChart"></canvas></div>`;
+        html += `</div>`;
+    }
+
+    // === Section 6: Source Containers ===
+    const containers = cq?.container;
+    if (containers && containers.length > 0) {
+        html += `<div class="section"><div class="section-title">\u6765\u6E90\u7BB1\u5B50 / \u6536\u85CF\u54C1</div>`;
+        html += `<div class="container-cards">`;
+        for (const ct of containers) {
+            html += `<div class="container-card">`;
+            html += `<div class="cc-name">${esc(ct.name)}</div>`;
+            html += `<div class="cc-meta">`;
+            if (ct.price > 0) html += `<span>\u5F53\u524D\u4EF7 &yen;${fmtN(ct.price)}</span>`;
+            if (ct.roi != null) html += `<span>ROI <b style="color:${ct.roi > 0 ? 'var(--green)' : 'var(--red)'}">${ct.roi > 0 ? '+' : ''}${ct.roi.toFixed(2)}%</b></span>`;
+            html += `</div>`;
+            if (ct.comment) html += `<div class="cc-comment">${esc(ct.comment)}</div>`;
+            html += `</div>`;
+        }
+        html += `</div></div>`;
+    }
+
+    // === Section 7: Statistic List (all wear variants) ===
+    const statList = cq?.statisticList;
+    if (statList && statList.length > 1) {
+        html += `<div class="section"><div class="section-title">\u5404\u6B3E\u5B58\u4E16\u91CF\u5206\u5E03</div>`;
+        html += `<div class="stat-list-grid">`;
+        for (const sl of statList) {
+            html += `<div class="stat-list-item">`;
+            html += `<span class="sli-name">${esc(sl.name)}${sl.exterior ? ' (' + esc(sl.exterior) + ')' : ''}</span>`;
+            html += `<span class="sli-count">${Number(sl.statistic).toLocaleString()}</span>`;
+            html += `</div>`;
+        }
+        html += `</div></div>`;
+    }
+
+    // === Sell Order Summary (original) ===
     if (so.price_range) {
-        html += `<div class="section"><div class="section-title">在售挂单 (${so.total||0} 个)</div><div class="metric-grid">
-            <div class="metric"><div class="label">最低</div><div class="val c-ask">&yen;${fmtN(so.price_range.min)}</div></div>
-            <div class="metric"><div class="label">最高</div><div class="val">&yen;${fmtN(so.price_range.max)}</div></div>
-            <div class="metric"><div class="label">平均</div><div class="val">&yen;${fmtN(so.price_range.avg)}</div></div>
-        </div></div>`;
+        html += `<div class="section"><div class="section-title">\u5728\u552E\u6302\u5355\u5206\u5E03 (${so.total} \u4E2A)</div>
+        <div class="metric-grid">
+            <div class="metric"><div class="label">\u6700\u4F4E\u6302\u5355</div><div class="val c-ask">&yen;${fmtN(so.price_range.min)}</div></div>
+            <div class="metric"><div class="label">\u6700\u9AD8\u6302\u5355</div><div class="val">&yen;${fmtN(so.price_range.max)}</div></div>
+            <div class="metric"><div class="label">\u5E73\u5747\u6302\u5355</div><div class="val">&yen;${fmtN(so.price_range.avg)}</div></div>
+        </div>`;
+        const listings = so.top_listings || [];
+        if (listings.length > 0) {
+            html += `<table class="listing-table"><thead><tr><th>\u4EF7\u683C</th><th>\u78E8\u635F</th><th>\u8D34\u7EB8</th></tr></thead><tbody>`;
+            for (const l of listings) {
+                const lw = l.paintwear ? parseFloat(l.paintwear).toFixed(6) : '-';
+                const stickers = l.stickers?.length > 0 ? l.stickers.map(s => s.name||'').filter(Boolean).join(', ') || '-' : '-';
+                html += `<tr><td class="cell-price ask">&yen;${fmtN(l.price)}</td><td>${lw}</td><td style="white-space:normal;max-width:200px">${esc(stickers)}</td></tr>`;
+            }
+            html += `</tbody></table>`;
+        }
+        html += `</div>`;
     }
 
-    const history = item.priceHistory||[];
-    if (history.length > 1) {
-        html += `<div class="section"><div class="section-title">价格走势</div><div class="chart-wrap"><canvas id="priceChart"></canvas><div class="chart-tooltip" id="priceChartTip"></div></div></div>`;
-    }
-
-    const txs = item.transactions||[];
+    // === Transactions (original) ===
+    const txs = item.transactions || [];
     if (txs.length > 0) {
-        html += `<div class="section"><div class="section-title">成交记录 (${txs.length} 条)</div><div class="tx-scroll"><table class="tx-table"><thead><tr><th>价格</th><th>磨损</th><th>时间</th></tr></thead><tbody>`;
-        txs.slice(-20).reverse().forEach(tx => {
-            const t = typeof tx.time==='number'?(tx.time>1e12?new Date(tx.time):new Date(tx.time*1000)).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):tx.time||'-';
-            const w = tx.paintwear?parseFloat(tx.paintwear).toFixed(6):'-';
-            html += `<tr><td class="cell-price ask">&yen;${fmtN(tx.price)}</td><td>${w}</td><td class="cell-time">${t}</td></tr>`;
+        html += `<div class="section"><div class="section-title">\u6210\u4EA4\u8BB0\u5F55 (${txs.length} \u6761)</div><div class="tx-scroll">
+        <table class="tx-table"><thead><tr><th>\u4EF7\u683C</th><th>\u78E8\u635F</th><th>\u65F6\u95F4</th></tr></thead><tbody>`;
+        txs.slice(-30).reverse().forEach(tx => {
+            const t = typeof tx.time === 'number' ? (tx.time > 1e12 ? new Date(tx.time) : new Date(tx.time * 1000)).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : tx.time || '-';
+            html += `<tr><td class="cell-price ask">&yen;${fmtN(tx.price)}</td><td>${tx.paintwear ? parseFloat(tx.paintwear).toFixed(6) : '-'}</td><td class="cell-time">${t}</td></tr>`;
         });
         html += `</tbody></table></div></div>`;
     }
+
     document.getElementById('modalBody').innerHTML = html;
-    if (history.length > 1) drawChart('priceChart', history.map(h=>({t:h.t,p:h.p})));
+
+    // === Initialize existence chart ===
+    if (existenceData && existenceData.length > 1) {
+        requestAnimationFrame(() => drawExistenceChart(existenceData));
+    }
+
+    // === Initialize interactive chart ===
+    if (finalSell.length > 1) {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const sellData = finalSell.map(h => ({t:h.t, p:h.p, v:h.v, src:h.src}));
+                const buyData = allBuyData.length > 1 ? allBuyData : null;
+                initChart('priceChart', sellData, buyData);
+
+                // Range buttons: set viewport instead of filtering data
+                const rangeBtns = document.querySelectorAll('#priceRangeBtns .range-btn');
+                rangeBtns.forEach(btn => {
+                    btn.onclick = () => {
+                        if (!_chart) return;
+                        rangeBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        const days = parseInt(btn.dataset.range);
+                        if (days === 0) {
+                            _chart.vStart = 0;
+                            _chart.vEnd = _chart.allSell.length - 1;
+                        } else {
+                            const cutoff = Date.now() - days * 86400000;
+                            let si = _chart.allSell.findIndex(d2 => d2.t >= cutoff);
+                            if (si < 0) si = 0;
+                            _chart.vStart = si;
+                            _chart.vEnd = _chart.allSell.length - 1;
+                        }
+                        chartRender();
+                        chartUpdateMinimap();
+                    };
+                });
+            });
+        });
+    }
 }
-function closeModal(){document.getElementById('modal').classList.remove('active')}
 
-function drawChart(id, data) {
-    const canvas=document.getElementById(id); if(!canvas)return;
-    const tip=document.getElementById(id+'Tip');
-    const dpr=window.devicePixelRatio||1, rect=canvas.getBoundingClientRect();
-    canvas.width=rect.width*dpr; canvas.height=rect.height*dpr;
-    const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
-    const W=rect.width, H=rect.height, pad={top:16,right:54,bottom:24,left:8};
-    const prices=data.map(d=>d.p), minP=Math.min(...prices)*0.98, maxP=Math.max(...prices)*1.02, rng=maxP-minP||1;
+// ===== Existence Chart =====
+function drawExistenceChart(data) {
+    const canvas = document.getElementById('existenceChart');
+    if (!canvas || data.length < 2) return;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width < 10) { setTimeout(() => drawExistenceChart(data), 50); return; }
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const W = rect.width, H = rect.height;
+    const pad = { top: 12, right: 50, bottom: 24, left: 8 };
 
-    function paintBase(){
-        ctx.clearRect(0,0,W,H);
-        for(let i=0;i<4;i++){const y=pad.top+(H-pad.top-pad.bottom)*i/3;ctx.strokeStyle='#e8e8e5';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();ctx.fillStyle='#9b9b9b';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText('\u00A5'+fmtN(maxP-rng*i/3),W-4,y+4)}
-        ctx.beginPath();data.forEach((d,i)=>{const x=pad.left+(W-pad.left-pad.right)*i/(data.length-1),y=pad.top+(H-pad.top-pad.bottom)*(1-(d.p-minP)/rng);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
-        ctx.lineTo(pad.left+(W-pad.left-pad.right),H-pad.bottom);ctx.lineTo(pad.left,H-pad.bottom);ctx.closePath();
-        const grad=ctx.createLinearGradient(0,pad.top,0,H-pad.bottom);grad.addColorStop(0,'rgba(35,131,226,0.08)');grad.addColorStop(1,'rgba(35,131,226,0)');ctx.fillStyle=grad;ctx.fill();
-        ctx.beginPath();data.forEach((d,i)=>{const x=pad.left+(W-pad.left-pad.right)*i/(data.length-1),y=pad.top+(H-pad.top-pad.bottom)*(1-(d.p-minP)/rng);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.strokeStyle='#2383e2';ctx.lineWidth=1.5;ctx.stroke();
+    const counts = data.map(d => d.count);
+    const minC = Math.min(...counts);
+    const maxC = Math.max(...counts);
+    const range = maxC - minC || 1;
+    const plotW = W - pad.left - pad.right;
+    const plotH = H - pad.top - pad.bottom;
+
+    const toX = (i) => pad.left + plotW * i / Math.max(data.length - 1, 1);
+    const toY = (c) => pad.top + plotH * (1 - (c - minC * 0.999) / (range * 1.002));
+
+    // Grid lines + Y labels
+    ctx.fillStyle = '#9b9b9b'; ctx.font = '10px -apple-system, sans-serif'; ctx.textAlign = 'right';
+    for (let i = 0; i < 3; i++) {
+        const v = maxC - range * i / 2;
+        const y = toY(v);
+        ctx.strokeStyle = '#e8e8e5'; ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+        ctx.fillText(Number(Math.round(v)).toLocaleString(), W - 4, y + 4);
     }
-    function paintHover(idx){
-        paintBase(); if(idx<0||idx>=data.length)return;
-        const d=data[idx];
-        const x=pad.left+(W-pad.left-pad.right)*idx/(data.length-1);
-        const y=pad.top+(H-pad.top-pad.bottom)*(1-(d.p-minP)/rng);
-        ctx.save();ctx.setLineDash([4,3]);ctx.strokeStyle='#b0b0b0';ctx.lineWidth=0.8;
-        ctx.beginPath();ctx.moveTo(x,pad.top);ctx.lineTo(x,H-pad.bottom);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();ctx.restore();
-        ctx.beginPath();ctx.arc(x,y,4.5,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#2383e2';ctx.lineWidth=2;ctx.stroke();
+
+    // X labels
+    ctx.textAlign = 'center';
+    const labelCount = Math.min(4, data.length);
+    for (let i = 0; i < labelCount; i++) {
+        const idx = Math.round(i * (data.length - 1) / (labelCount - 1));
+        const x = toX(idx);
+        const dt = data[idx].date || '';
+        ctx.fillText(dt.slice(5), x, H - 6); // MM-DD
     }
-    paintBase();
-    if(!tip)return;
-    canvas.onmousemove=function(e){
-        const cr=canvas.getBoundingClientRect(), mx=e.clientX-cr.left;
-        const r2=(mx-pad.left)/(W-pad.left-pad.right), idx=Math.round(r2*(data.length-1));
-        if(idx<0||idx>=data.length||mx<pad.left||mx>W-pad.right){tip.style.display='none';paintBase();return}
-        const d=data[idx]; paintHover(idx);
-        const ts=new Date(d.t).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-        let h=`<div class="tt-price">&yen;${fmtN(d.p)}</div><div class="tt-time">${ts}</div>`;
-        if(d.v!=null)h+=`<div class="tt-vol">在售 ${d.v}</div>`;
-        tip.innerHTML=h;tip.style.display='block';
-        let left=mx+12,top=e.clientY-cr.top-tip.offsetHeight/2;
-        if(left+tip.offsetWidth>cr.width)left=mx-tip.offsetWidth-12;
-        if(top<0)top=4;if(top+tip.offsetHeight>cr.height)top=cr.height-tip.offsetHeight-4;
-        tip.style.left=left+'px';tip.style.top=top+'px';
+
+    // Area fill
+    ctx.beginPath();
+    data.forEach((d, i) => { const x = toX(i), y = toY(d.count); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+    ctx.lineTo(toX(data.length - 1), H - pad.bottom);
+    ctx.lineTo(toX(0), H - pad.bottom);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, pad.top, 0, H - pad.bottom);
+    grad.addColorStop(0, 'rgba(42,157,143,0.12)'); grad.addColorStop(1, 'rgba(42,157,143,0)');
+    ctx.fillStyle = grad; ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    data.forEach((d, i) => { const x = toX(i), y = toY(d.count); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+    ctx.strokeStyle = '#2a9d8f'; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // End dot + label
+    const lastD = data[data.length - 1];
+    const lx = toX(data.length - 1), ly = toY(lastD.count);
+    ctx.beginPath(); ctx.arc(lx, ly, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#2a9d8f'; ctx.fill();
+
+    // Change indicator
+    const firstC = data[0].count, lastC = lastD.count;
+    const diff = lastC - firstC;
+    if (diff !== 0) {
+        const sign = diff > 0 ? '+' : '';
+        ctx.fillStyle = diff > 0 ? '#448361' : '#c4554d';
+        ctx.font = 'bold 11px -apple-system, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${sign}${diff}`, lx - 30, pad.top + 2);
+    }
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('active'); _chart = null; }
+
+// ===== Interactive Chart with Zoom & Pan =====
+let _chart = null; // active chart state
+
+function initChart(id, sellData, buyData) {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    const tip = document.getElementById(id + 'Tip');
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width < 10) { setTimeout(() => initChart(id, sellData, buyData), 50); return; }
+
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+
+    _chart = {
+        id, canvas, tip, dpr,
+        allSell: sellData,
+        allBuy: buyData,
+        vStart: 0,
+        vEnd: sellData.length - 1,
+        pad: { top: 16, right: 58, bottom: 28, left: 8 },
+        // drag state
+        dragging: false, dragStartX: 0, dragVS0: 0, dragVE0: 0, moved: false,
+        // touch state
+        lastPinchDist: 0, touchStartX: 0,
     };
-    canvas.onmouseleave=function(){tip.style.display='none';paintBase()};
+
+    chartRender();
+    chartUpdateMinimap();
+    chartBindEvents();
 }
 
-function fmtN(n){if(n==null||isNaN(n))return'-';return Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function timeAgo(iso){const d=(Date.now()-new Date(iso).getTime())/1000;if(d<60)return'刚刚';if(d<3600)return Math.floor(d/60)+'分钟前';if(d<86400)return Math.floor(d/3600)+'小时前';return Math.floor(d/86400)+'天前'}
+function chartGetVisible() {
+    const c = _chart;
+    const vs = c.allSell.slice(c.vStart, c.vEnd + 1);
+    let vb = null;
+    if (c.allBuy && c.allBuy.length > 1 && vs.length > 0) {
+        const tMin = vs[0].t, tMax = vs[vs.length - 1].t;
+        vb = c.allBuy.filter(d => d.t >= tMin && d.t <= tMax);
+        if (vb.length < 2) vb = null;
+    }
+    return { vs, vb };
+}
+
+function chartRender() {
+    const c = _chart;
+    if (!c) return;
+    const { canvas, dpr, pad } = c;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const W = rect.width, H = rect.height;
+
+    const { vs, vb } = chartGetVisible();
+    if (vs.length < 2) return;
+
+    // Y range from visible data
+    const allP = vs.map(d => d.p);
+    if (vb) vb.forEach(d => allP.push(d.p));
+    const minP = Math.min(...allP) * 0.97;
+    const maxP = Math.max(...allP) * 1.03;
+    const range = maxP - minP || 1;
+
+    const plotW = W - pad.left - pad.right;
+    const plotH = H - pad.top - pad.bottom;
+    const toX = (i) => pad.left + plotW * i / Math.max(vs.length - 1, 1);
+    const toY = (p) => pad.top + plotH * (1 - (p - minP) / range);
+    const tSpan = vs[vs.length - 1].t - vs[0].t;
+    const toXT = (t) => pad.left + plotW * (t - vs[0].t) / (tSpan || 1);
+
+    // Store for hover
+    c._vs = vs; c._vb = vb; c._W = W; c._H = H;
+    c._toX = toX; c._toY = toY; c._toXT = toXT;
+    c._minP = minP; c._maxP = maxP; c._range = range; c._tSpan = tSpan;
+
+    // Build buy lookup
+    c._buyLookup = null;
+    if (vb && vb.length > 0) {
+        c._buyLookup = new Map();
+        for (const b of vb) c._buyLookup.set(new Date(b.t).toISOString().slice(0, 10), b.p);
+    }
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid + Y labels
+    for (let i = 0; i < 4; i++) {
+        const y = pad.top + plotH * i / 3;
+        ctx.strokeStyle = '#e8e8e5'; ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+        ctx.fillStyle = '#9b9b9b'; ctx.font = '11px -apple-system, sans-serif'; ctx.textAlign = 'right';
+        ctx.fillText('\u00A5' + fmtN(maxP - range * i / 3), W - 4, y + 4);
+    }
+
+    // X labels
+    ctx.fillStyle = '#9b9b9b'; ctx.font = '10px -apple-system, sans-serif'; ctx.textAlign = 'center';
+    const showYear = tSpan > 180 * 86400000;
+    const labelCount = Math.min(5, vs.length);
+    for (let i = 0; i < labelCount; i++) {
+        const idx = Math.round(i * (vs.length - 1) / (labelCount - 1));
+        const x = toX(idx);
+        const dt = new Date(vs[idx].t);
+        const label = showYear
+            ? dt.toLocaleDateString('zh-CN', { year: '2-digit', month: 'numeric', day: 'numeric' })
+            : dt.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+        ctx.fillText(label, x, H - 6);
+    }
+
+    // Buy area + line
+    if (vb && vb.length > 1) {
+        ctx.beginPath();
+        vb.forEach((d, i) => { const x = toXT(d.t), y = toY(d.p); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+        ctx.lineTo(toXT(vb[vb.length - 1].t), H - pad.bottom);
+        ctx.lineTo(toXT(vb[0].t), H - pad.bottom);
+        ctx.closePath();
+        const bg = ctx.createLinearGradient(0, pad.top, 0, H - pad.bottom);
+        bg.addColorStop(0, 'rgba(68,131,97,0.08)'); bg.addColorStop(1, 'rgba(68,131,97,0)');
+        ctx.fillStyle = bg; ctx.fill();
+        ctx.beginPath();
+        vb.forEach((d, i) => { const x = toXT(d.t), y = toY(d.p); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+        ctx.strokeStyle = 'rgba(68,131,97,0.6)'; ctx.lineWidth = 1.2; ctx.stroke();
+    }
+
+    // Sell area + line
+    ctx.beginPath();
+    vs.forEach((d, i) => { const x = toX(i), y = toY(d.p); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+    ctx.lineTo(toX(vs.length - 1), H - pad.bottom);
+    ctx.lineTo(toX(0), H - pad.bottom);
+    ctx.closePath();
+    const sg = ctx.createLinearGradient(0, pad.top, 0, H - pad.bottom);
+    sg.addColorStop(0, 'rgba(35,131,226,0.1)'); sg.addColorStop(1, 'rgba(35,131,226,0)');
+    ctx.fillStyle = sg; ctx.fill();
+    ctx.beginPath();
+    vs.forEach((d, i) => { const x = toX(i), y = toY(d.p); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+    ctx.strokeStyle = '#2383e2'; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // Zoom indicator
+    const isZoomed = c.vStart > 0 || c.vEnd < c.allSell.length - 1;
+    const resetBtn = document.getElementById('chartResetBtn');
+    if (resetBtn) resetBtn.style.display = isZoomed ? 'inline-block' : 'none';
+}
+
+function chartPaintHover(idx) {
+    chartRender();
+    const c = _chart;
+    if (!c || idx < 0 || idx >= c._vs.length) return;
+    const { canvas, dpr, pad, _vs: vs, _toX: toX, _toY: toY, _H: H, _buyLookup: buyLookup } = c;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const d = vs[idx];
+    const x = toX(idx), y = toY(d.p);
+
+    // Crosshair
+    ctx.save(); ctx.setLineDash([4, 3]); ctx.strokeStyle = '#b0b0b0'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, H - pad.bottom); ctx.stroke(); ctx.restore();
+
+    // Sell dot
+    ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#2383e2'; ctx.lineWidth = 2; ctx.stroke();
+
+    // Buy dot
+    if (buyLookup) {
+        const bp = buyLookup.get(new Date(d.t).toISOString().slice(0, 10));
+        if (bp != null) {
+            const by = toY(bp);
+            ctx.beginPath(); ctx.arc(x, by, 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#448361'; ctx.lineWidth = 1.5; ctx.stroke();
+        }
+    }
+}
+
+function chartShowTooltip(e) {
+    const c = _chart;
+    if (!c || !c.tip || !c._vs || c._vs.length < 2) return;
+    const cr = c.canvas.getBoundingClientRect();
+    const mx = e.clientX - cr.left;
+    const plotL = c.pad.left, plotR = c._W - c.pad.right;
+    if (mx < plotL || mx > plotR) { c.tip.style.display = 'none'; chartRender(); return; }
+
+    const r = (mx - plotL) / (plotR - plotL);
+    const idx = Math.round(r * (c._vs.length - 1));
+    if (idx < 0 || idx >= c._vs.length) { c.tip.style.display = 'none'; chartRender(); return; }
+
+    chartPaintHover(idx);
+    const d = c._vs[idx];
+    const dt = new Date(d.t);
+    const showYr = c._tSpan > 180 * 86400000, showTm = c._tSpan < 30 * 86400000;
+    let ts;
+    if (showYr) ts = dt.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    else if (showTm) ts = dt.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    else ts = dt.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit' });
+
+    let th = `<div class="tt-price">卖价 &yen;${fmtN(d.p)}</div>`;
+    if (c._buyLookup) {
+        const bp = c._buyLookup.get(new Date(d.t).toISOString().slice(0, 10));
+        if (bp != null) th += `<div class="tt-buy">求购 &yen;${fmtN(bp)}</div>`;
+    }
+    th += `<div class="tt-time">${ts}</div>`;
+    if (d.v != null) th += `<div class="tt-vol">在售 ${d.v}</div>`;
+    if (d.src === 'csqaq') th += `<div class="tt-src">来源: CSQAQ</div>`;
+    c.tip.innerHTML = th;
+    c.tip.style.display = 'block';
+
+    const tw = c.tip.offsetWidth, tth = c.tip.offsetHeight;
+    let l = mx + 12, t = (e.clientY - cr.top) - tth / 2;
+    if (l + tw > cr.width) l = mx - tw - 12;
+    if (t < 0) t = 4; if (t + tth > cr.height) t = cr.height - tth - 4;
+    c.tip.style.left = l + 'px'; c.tip.style.top = t + 'px';
+}
+
+function chartUpdateMinimap() {
+    const c = _chart;
+    if (!c) return;
+    const mm = document.getElementById('chartMinimap');
+    const bar = document.getElementById('chartMinimapBar');
+    if (!mm || !bar) return;
+    const isZoomed = c.vStart > 0 || c.vEnd < c.allSell.length - 1;
+    mm.style.display = isZoomed ? 'block' : 'none';
+    if (isZoomed) {
+        const total = c.allSell.length - 1;
+        bar.style.left = (c.vStart / total * 100) + '%';
+        bar.style.width = ((c.vEnd - c.vStart) / total * 100) + '%';
+    }
+}
+
+function chartResetView() {
+    if (!_chart) return;
+    _chart.vStart = 0;
+    _chart.vEnd = _chart.allSell.length - 1;
+    chartRender();
+    chartUpdateMinimap();
+    // Reset range button highlight
+    const btns = document.querySelectorAll('#priceRangeBtns .range-btn');
+    btns.forEach(b => b.classList.remove('active'));
+    const allBtn = document.querySelector('#priceRangeBtns .range-btn[data-range="0"]');
+    if (allBtn) allBtn.classList.add('active');
+}
+
+function chartBindEvents() {
+    const c = _chart;
+    if (!c) return;
+    const canvas = c.canvas;
+    canvas.style.cursor = 'crosshair';
+
+    // --- Mouse wheel to zoom ---
+    canvas.onwheel = function (e) {
+        e.preventDefault();
+        if (!_chart) return;
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left - _chart.pad.left;
+        const plotW = rect.width - _chart.pad.left - _chart.pad.right;
+        const frac = Math.max(0, Math.min(1, mx / plotW));
+
+        const curSpan = _chart.vEnd - _chart.vStart;
+        const factor = e.deltaY > 0 ? 1.25 : 0.8;
+        let newSpan = Math.round(curSpan * factor);
+        newSpan = Math.max(8, Math.min(_chart.allSell.length - 1, newSpan));
+
+        const pivot = _chart.vStart + frac * curSpan;
+        let ns = Math.round(pivot - frac * newSpan);
+        let ne = ns + newSpan;
+        if (ns < 0) { ns = 0; ne = newSpan; }
+        if (ne >= _chart.allSell.length) { ne = _chart.allSell.length - 1; ns = Math.max(0, ne - newSpan); }
+        _chart.vStart = ns;
+        _chart.vEnd = ne;
+        chartRender();
+        chartUpdateMinimap();
+        if (_chart.tip) _chart.tip.style.display = 'none';
+    };
+
+    // --- Mouse drag to pan ---
+    canvas.onmousedown = function (e) {
+        if (!_chart) return;
+        _chart.dragging = true;
+        _chart.moved = false;
+        _chart.dragStartX = e.clientX;
+        _chart.dragVS0 = _chart.vStart;
+        _chart.dragVE0 = _chart.vEnd;
+    };
+
+    canvas.onmousemove = function (e) {
+        if (!_chart) return;
+        if (_chart.dragging) {
+            const dx = e.clientX - _chart.dragStartX;
+            if (Math.abs(dx) > 3) _chart.moved = true;
+            if (!_chart.moved) return;
+            canvas.style.cursor = 'grabbing';
+            const rect = canvas.getBoundingClientRect();
+            const plotW = rect.width - _chart.pad.left - _chart.pad.right;
+            const curSpan = _chart.dragVE0 - _chart.dragVS0;
+            const di = Math.round(-dx / plotW * curSpan);
+            let ns = _chart.dragVS0 + di;
+            let ne = _chart.dragVE0 + di;
+            if (ns < 0) { ns = 0; ne = ns + curSpan; }
+            if (ne >= _chart.allSell.length) { ne = _chart.allSell.length - 1; ns = ne - curSpan; }
+            _chart.vStart = Math.max(0, ns);
+            _chart.vEnd = Math.min(_chart.allSell.length - 1, ne);
+            chartRender();
+            chartUpdateMinimap();
+            if (_chart.tip) _chart.tip.style.display = 'none';
+            return;
+        }
+        // Normal hover
+        chartShowTooltip(e);
+    };
+
+    const mouseUpHandler = function () {
+        if (_chart) {
+            _chart.dragging = false;
+            canvas.style.cursor = 'crosshair';
+        }
+    };
+    window.addEventListener('mouseup', mouseUpHandler);
+
+    canvas.onmouseleave = function () {
+        if (_chart && _chart.tip) _chart.tip.style.display = 'none';
+        if (!_chart || !_chart.dragging) chartRender();
+    };
+
+    // --- Double-click to reset ---
+    canvas.ondblclick = function () {
+        chartResetView();
+    };
+
+    // --- Touch support for mobile ---
+    canvas.ontouchstart = function (e) {
+        if (!_chart) return;
+        if (e.touches.length === 1) {
+            _chart.dragging = true;
+            _chart.moved = false;
+            _chart.dragStartX = e.touches[0].clientX;
+            _chart.dragVS0 = _chart.vStart;
+            _chart.dragVE0 = _chart.vEnd;
+        } else if (e.touches.length === 2) {
+            _chart.dragging = false;
+            _chart.lastPinchDist = Math.abs(e.touches[0].clientX - e.touches[1].clientX);
+        }
+        e.preventDefault();
+    };
+
+    canvas.ontouchmove = function (e) {
+        if (!_chart) return;
+        e.preventDefault();
+        if (e.touches.length === 1 && _chart.dragging) {
+            const dx = e.touches[0].clientX - _chart.dragStartX;
+            if (Math.abs(dx) > 3) _chart.moved = true;
+            if (!_chart.moved) return;
+            const rect = canvas.getBoundingClientRect();
+            const plotW = rect.width - _chart.pad.left - _chart.pad.right;
+            const curSpan = _chart.dragVE0 - _chart.dragVS0;
+            const di = Math.round(-dx / plotW * curSpan);
+            let ns = _chart.dragVS0 + di, ne = _chart.dragVE0 + di;
+            if (ns < 0) { ns = 0; ne = ns + curSpan; }
+            if (ne >= _chart.allSell.length) { ne = _chart.allSell.length - 1; ns = ne - curSpan; }
+            _chart.vStart = Math.max(0, ns);
+            _chart.vEnd = Math.min(_chart.allSell.length - 1, ne);
+            chartRender();
+            chartUpdateMinimap();
+        } else if (e.touches.length === 2) {
+            const dist = Math.abs(e.touches[0].clientX - e.touches[1].clientX);
+            if (_chart.lastPinchDist > 0) {
+                const scale = _chart.lastPinchDist / dist;
+                const curSpan = _chart.vEnd - _chart.vStart;
+                let newSpan = Math.round(curSpan * scale);
+                newSpan = Math.max(8, Math.min(_chart.allSell.length - 1, newSpan));
+                const mid = (_chart.vStart + _chart.vEnd) / 2;
+                let ns = Math.round(mid - newSpan / 2);
+                let ne = ns + newSpan;
+                if (ns < 0) { ns = 0; ne = newSpan; }
+                if (ne >= _chart.allSell.length) { ne = _chart.allSell.length - 1; ns = Math.max(0, ne - newSpan); }
+                _chart.vStart = ns;
+                _chart.vEnd = ne;
+                chartRender();
+                chartUpdateMinimap();
+            }
+            _chart.lastPinchDist = dist;
+        }
+    };
+
+    canvas.ontouchend = function () {
+        if (_chart) { _chart.dragging = false; _chart.lastPinchDist = 0; }
+    };
+}
+
+// ===== Actions =====
+async function triggerScrape() { try { await fetch(`${API}/api/scrape`); } catch(e) {} alert('爬取已启动'); }
+async function triggerDetailScrape() { try { await fetch(`${API}/api/scrape/details`); } catch(e) {} alert('详情爬取已启动'); }
+
+// ===== Utilities =====
+function fmtN(n) { if (n == null || isNaN(n)) return '-'; return Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function timeAgo(iso) { const d=((Date.now()-new Date(iso).getTime())/1000); if(d<60)return'刚刚'; if(d<3600)return Math.floor(d/60)+'分钟前'; if(d<86400)return Math.floor(d/3600)+'小时前'; return Math.floor(d/86400)+'天前'; }
 
 loadData();
-setInterval(loadData, 300000);
+setInterval(loadData, 60000);
 </script>
 </body>
 </html>
